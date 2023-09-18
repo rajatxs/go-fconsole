@@ -1,0 +1,26 @@
+{
+  "name": "fconsole-ui",
+  "private": true,
+  "version": "0.0.1",
+  "type": "module",
+  "author": {
+    "name": "Rajat Sharma",
+    "email": "rxx256+npm@outlook.com",
+    "url": "https://github.com/rajatxs"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "vue": "^3.2.37",
+    "vue-router": "^4.2.4",
+    "vuetify": "^3.3.16"
+  },
+  "devDependencies": {
+    "@mdi/font": "^7.2.96",
+    "@vitejs/plugin-vue": "^3.0.3",
+    "vite": "^3.0.7"
+  }
+}
