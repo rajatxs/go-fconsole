@@ -4,7 +4,6 @@ import (
 	"embed"
 	"log"
 
-	"github.com/rajatxs/go-fconsole/db"
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
@@ -21,14 +20,15 @@ func runApp() error {
 	// TODO: Add `backgroundColor` property
 	err := wails.Run(&options.App{
 		Title:     "Console",
-		MinWidth:  1000,
-		Width:     1350,
-		MinHeight: 600,
-		Height:    900,
+		MinWidth:  700,
+		Width:     1300,
+		MinHeight: 500,
+		Height:    700,
 		AssetServer: &assetserver.Options{
 			Assets: assets,
 		},
-		OnStartup: app.startup,
+		OnStartup:  app.startup,
+		OnShutdown: app.terminate,
 		Bind: []interface{}{
 			app,
 		},
@@ -39,10 +39,6 @@ func runApp() error {
 
 func main() {
 	var err error
-
-	if err = db.ConnectMongoDb(); err != nil {
-		log.Fatal(err)
-	}
 
 	if err = runApp(); err != nil {
 		log.Fatal(err)

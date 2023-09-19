@@ -2,12 +2,13 @@ package main
 
 import (
 	"context"
+	"log"
 
-	"github.com/labstack/gommon/log"
 	"github.com/rajatxs/go-fconsole/config"
 	"github.com/rajatxs/go-fconsole/db"
 	"github.com/rajatxs/go-fconsole/models"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
@@ -24,7 +25,21 @@ func NewApp() *App {
 // startup is called when the app starts. The context is saved
 // so we can call the runtime methods
 func (a *App) startup(ctx context.Context) {
+	var err error
+
 	a.ctx = ctx
+	if err = db.ConnectMongoDb(ctx); err != nil {
+		log.Fatal(err)
+	}
+}
+
+// terminate is called when the app shutdown.
+func (a *App) terminate(ctx context.Context) {
+	var err error
+
+	if err = db.DisconnectMongoDb(ctx); err != nil {
+		log.Println(err)
+	}
 }
 
 func (a *App) GetAppConfigVariables() map[string]string {
@@ -36,9 +51,10 @@ func (a *App) GetAppConfigVariables() map[string]string {
 	return env
 }
 
-func (a *App) GetPostsMetadata(scope string, sortBy string, limit int64, skip int64) ([]models.PostMetadataDocument, error) {
+func (a *App) GetPostsMetadata(scope string, topic string, sortBy string, limit int64, skip int64) ([]models.PostMetadataDocument, error) {
 	var posts []models.PostMetadataDocument
 	var collName string
+	var filter primitive.D = bson.D{}
 
 	opts := options.Find()
 
@@ -46,6 +62,10 @@ func (a *App) GetPostsMetadata(scope string, sortBy string, limit int64, skip in
 		collName = "publicPostsMetadata"
 	} else {
 		collName = "privatePostsMetadata"
+	}
+
+	if topic != "all" {
+		filter = bson.D{{Key: "topic", Value: topic}}
 	}
 
 	switch sortBy {
@@ -68,8 +88,8 @@ func (a *App) GetPostsMetadata(scope string, sortBy string, limit int64, skip in
 	opts.SetLimit(limit)
 	opts.SetSkip(skip)
 
-	if cur, err := db.MongoDb().Collection(collName).Find(a.ctx, bson.D{}, nil, opts); err != nil {
-		log.Error(err)
+	if cur, err := db.MongoDb().Collection(collName).Find(a.ctx, filter, nil, opts); err != nil {
+		log.Println(err)
 	} else {
 		defer cur.Close(a.ctx)
 

@@ -14,22 +14,26 @@ func MongoDb() *mongo.Database {
 	return client.Database(config.MongoDbName())
 }
 
-func ConnectMongoDb() (err error) {
+func ConnectMongoDb(ctx context.Context) (err error) {
 	clientOptions := options.Client().ApplyURI(config.MongoDbConnectionUrl())
 
 	// connect to MongoDB
-	if client, err = mongo.Connect(context.Background(), clientOptions); err != nil {
+	if client, err = mongo.Connect(ctx, clientOptions); err != nil {
 		return err
 	}
 
 	// check the connection
-	if err = client.Ping(context.Background(), nil); err != nil {
+	if err = client.Ping(ctx, nil); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func DisconnectMongoDb() {
-
+func DisconnectMongoDb(ctx context.Context) (err error) {
+	if client == nil {
+		return nil
+	} else {
+		return client.Disconnect(ctx)
+	}
 }
