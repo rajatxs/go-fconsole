@@ -10,6 +10,6 @@ export function GetPostCount(arg1, arg2) {
   return window['go']['main']['App']['GetPostCount'](arg1, arg2);
 }
 
-export function GetPostsMetadata(arg1, arg2, arg3, arg4) {
-  return window['go']['main']['App']['GetPostsMetadata'](arg1, arg2, arg3, arg4);
+export function GetPostsMetadata(arg1, arg2, arg3, arg4, arg5) {
+  return window['go']['main']['App']['GetPostsMetadata'](arg1, arg2, arg3, arg4, arg5);
 }

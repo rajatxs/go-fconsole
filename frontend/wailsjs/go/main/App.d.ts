@@ -6,4 +6,4 @@ export function GetAppConfigVariables():Promise<{[key: string]: string}>;
 
 export function GetPostCount(arg1:string,arg2:boolean):Promise<number>;
 
-export function GetPostsMetadata(arg1:string,arg2:string,arg3:number,arg4:number):Promise<Array<models.PostMetadataDocument>>;
+export function GetPostsMetadata(arg1:string,arg2:string,arg3:string,arg4:number,arg5:number):Promise<Array<models.PostMetadataDocument>>;

@@ -1,20 +1,24 @@
 <script setup>
 import {ref, onMounted, watch} from 'vue';
 import {GetPostsMetadata, GetPostCount} from '../../wailsjs/go/main/App';
-import Loader from '../components/Loader.vue';
 import {groupArray, truncateText, getPostCoverImageURL} from '../utils';
+import {getTopicName, getPublicTopics} from '../utils/topic';
+import Loader from '../components/Loader.vue';
 
 /** @type {import('vue').Ref<any[][]>} */
 const postsGroups = ref([]);
 
 const loading = ref(true);
+const topic = ref('all');
 const scope = ref('public');
 const sort = ref('newest');
 const limit = ref(6);
 const pageIndex = ref(1);
 const maxPageIndex = ref(0);
 const fetchErrorSnackbar = ref(false);
-const errorMessage = ref('');
+
+/** @type {import('vue').Ref<any[]>} */
+const topicOptions = ref([]);
 
 const sortOptions = ref([
    {
@@ -39,13 +43,34 @@ const sortOptions = ref([
    },
 ]);
 
+function renderTopicFilter() {
+   /** @type {any} */
+   const _topics = getPublicTopics();
+
+   const options = [
+      {
+         title: 'All',
+         value: 'all',
+      },
+   ];
+
+   for (const _topic of _topics) {
+      options.push({
+         title: _topic.name,
+         value: _topic.id,
+      });
+   }
+
+   topicOptions.value = options;
+}
+
 async function fetchPosts() {
-   errorMessage.value = '';
    loading.value = true;
 
    try {
       const _posts = await GetPostsMetadata(
          scope.value,
+         topic.value,
          sort.value,
          limit.value,
          (pageIndex.value - 1) * limit.value
@@ -66,14 +91,17 @@ async function fetchPosts() {
    loading.value = false;
 }
 
-watch([sort, pageIndex], fetchPosts);
+watch([topic, sort, pageIndex], fetchPosts);
 watch(scope, async function () {
    // reset page index to avoid conflict
    pageIndex.value = 1;
    await fetchPosts();
 });
 
-onMounted(fetchPosts);
+onMounted(async function () {
+   renderTopicFilter();
+   await fetchPosts();
+});
 </script>
 
 <template>
@@ -87,7 +115,9 @@ onMounted(fetchPosts);
                <v-tab value="private"><v-icon>mdi-lock</v-icon>&nbsp;Private</v-tab>
             </v-tabs>
          </v-col>
-         <v-col cols="12" sm="4"> </v-col>
+         <v-col cols="12" sm="4">
+            <v-select label="Topic" :items="topicOptions" v-model="topic"></v-select>
+         </v-col>
          <v-col cols="12" sm="4">
             <v-select label="Sort By" :items="sortOptions" v-model="sort"></v-select>
          </v-col>
@@ -95,6 +125,13 @@ onMounted(fetchPosts);
 
       <v-container>
          <Loader v-if="loading" message="Getting posts" />
+         <v-sheet
+            v-else-if="!loading && postsGroups.length === 0"
+            :width="600"
+            :height="500"
+            class="d-flex flex-column align-center justify-center flex-wrap text-center mx-auto px-4">
+            <div class="text-h6">No Posts</div>
+         </v-sheet>
          <v-row v-else v-for="(group, groupIndex) of postsGroups" :key="groupIndex">
             <v-col v-for="post of group" :key="post._id" cols="12" sm="4">
                <v-card class="mx-auto">
@@ -109,7 +146,7 @@ onMounted(fetchPosts);
                      <v-card-title>{{ post.title }}</v-card-title>
 
                      <v-card-subtitle>
-                        <span class="me-1">{{ post.topic }}</span>
+                        <span class="me-1">{{ getTopicName(post.topic) }}</span>
                      </v-card-subtitle>
                   </v-card-item>
 

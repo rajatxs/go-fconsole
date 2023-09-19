@@ -1,8 +1,6 @@
 import { createApp } from 'vue';
 import App from './App.vue';
 import router from './router';
-import { GetAppConfigVariables } from '../wailsjs/go/main/App'
-import { setVariables } from './utils/env'
 import './style.css';
 
 // Vuetify
@@ -24,8 +22,4 @@ const app = createApp(App);
 
 app.use(router);
 app.use(vuetify);
-app.use(async function() {
-   const env = await GetAppConfigVariables();
-   setVariables(env);
-});
 app.mount('#app');
