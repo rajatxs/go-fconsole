@@ -3,6 +3,8 @@ package main
 import (
 	"context"
 	"log"
+	"os/user"
+	"runtime"
 
 	"github.com/rajatxs/go-fconsole/config"
 	"github.com/rajatxs/go-fconsole/db"
@@ -49,6 +51,28 @@ func (a *App) GetAppConfigVariables() map[string]string {
 	env["ADMIN_ID"] = config.AdminId()
 	env["CLOUDINARY_ID"] = config.CloudinaryId()
 	return env
+}
+
+func (a *App) GetVersions() map[string]string {
+	var ver = map[string]string{}
+
+	currentUser, err := user.Current()
+	if err != nil {
+		log.Println(err)
+	}
+
+	ver["app"] = "0.0.1"
+	ver["date"] = "2023-09-20T07:53:14.501Z"
+	ver["wails"] = "2.6.0"
+	ver["go"] = "1.20.3"
+
+	// TODO: Write "WebView2 Runtime Version" in UI
+	ver["webview2"] = "111.0.2045.32"
+	ver["os"] = runtime.GOOS
+	ver["arch"] = runtime.GOARCH
+	ver["uname"] = currentUser.Name
+	ver["homedir"] = currentUser.HomeDir
+	return ver
 }
 
 func (a *App) GetPostsMetadata(scope string, topic string, sortBy string, limit int64, skip int64) ([]models.PostMetadataDocument, error) {
