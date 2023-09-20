@@ -1,6 +1,7 @@
 import { createApp } from 'vue';
 import App from './App.vue';
 import router from './router';
+import { getString } from './utils/kvstore';
 import './style.css';
 
 // Vuetify
@@ -14,7 +15,10 @@ const vuetify = createVuetify({
    components,
    directives,
    icons: {
-      defaultSet: 'mdi', // This is already the default value - only for display purposes
+      defaultSet: 'mdi',
+   },
+   theme: {
+      defaultTheme: getString('theme', 'light'),
    },
 });
 

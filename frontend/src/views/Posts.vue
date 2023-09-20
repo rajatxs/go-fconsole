@@ -137,7 +137,7 @@ onMounted(async function () {
          </v-sheet>
          <v-row v-else v-for="(group, groupIndex) of postsGroups" :key="groupIndex">
             <v-col v-for="post of group" :key="post._id" cols="12" sm="4">
-               <v-card class="mx-auto">
+               <v-card class="mx-auto" :elevation="2">
                   <v-img
                      class="align-end text-white"
                      height="200"
