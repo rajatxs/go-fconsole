@@ -2,7 +2,6 @@
 import { onMounted, ref, watch } from 'vue';
 import { groupArray, getPostTopicImageUrl } from '../utils';
 import { getPublicTopics, getPrivateTopics } from '../utils/topic';
-import topics from '../data/topics.json';
 import Loader from '../components/Loader.vue';
 
 /** @type {import('vue').Ref<any[][]>} */
