@@ -3,10 +3,13 @@ import {ref, onMounted, watch} from 'vue';
 import {GetPostsMetadata, GetPostCount} from '../../wailsjs/go/main/App';
 import {groupArray, truncateText, getPostCoverImageURL} from '../utils';
 import {getTopicName, getPublicTopics} from '../utils/topic';
+import ComposePostDialog from '../components/ComposePostDialog.vue';
 import Loader from '../components/Loader.vue';
 
 /** @type {import('vue').Ref<any[][]>} */
 const postsGroups = ref([]);
+
+const composeMode = ref(false);
 
 const loading = ref(true);
 const topic = ref('all');
@@ -162,6 +165,11 @@ onMounted(async function () {
          </v-row>
       </v-container>
 
+      <ComposePostDialog 
+         :visible="composeMode" 
+         @open="composeMode = true"
+         @close="composeMode = false" />
+ 
       <v-pagination v-model="pageIndex" :length="maxPageIndex" class="mt-5"></v-pagination>
       <v-snackbar v-model="fetchErrorSnackbar" :timeout="5000"> Couldn't get posts </v-snackbar>
    </v-container>
