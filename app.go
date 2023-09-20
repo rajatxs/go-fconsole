@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"log"
+	"os/exec"
 	"os/user"
 	"runtime"
 
@@ -51,6 +52,21 @@ func (a *App) GetAppConfigVariables() map[string]string {
 	env["ADMIN_ID"] = config.AdminId()
 	env["CLOUDINARY_ID"] = config.CloudinaryId()
 	return env
+}
+
+func (a *App) OpenBrowser(url string, newTab bool) error {
+	var cmd *exec.Cmd
+
+	switch runtime.GOOS {
+	case "windows":
+		cmd = exec.Command("cmd", "/c", "start", url)
+	case "darwin":
+		cmd = exec.Command("open", url)
+	default:
+		cmd = exec.Command("xdg-open", url)
+	}
+
+	return cmd.Start()
 }
 
 func (a *App) GetVersions() map[string]string {
