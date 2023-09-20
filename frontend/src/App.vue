@@ -1,10 +1,10 @@
 <script setup>
-import { ref, onBeforeMount } from 'vue';
-import { useTheme } from 'vuetify';
-import { RouterView } from 'vue-router';
-import { GetAppConfigVariables } from '../wailsjs/go/main/App';
-import { setVariables } from './utils/env';
-import { setString } from './utils/kvstore';
+import {ref, onBeforeMount} from 'vue';
+import {useTheme} from 'vuetify';
+import {RouterView} from 'vue-router';
+import {GetAppConfigVariables} from '../wailsjs/go/main/App';
+import {setVariables} from './utils/env';
+import {setString} from './utils/kvstore';
 
 const loading = ref(true);
 const theme = useTheme();
@@ -22,10 +22,10 @@ async function preload() {
 
 /**
  * Sync app theme with system settings
- * @param {any} event 
+ * @param {any} event
  */
 function updateTheme(event) {
-   const currentTheme = theme.global.current.value.dark? 'dark': 'light';
+   const currentTheme = theme.global.current.value.dark ? 'dark' : 'light';
 
    if (event.matches) {
       // switch to dark theme
@@ -54,11 +54,26 @@ onBeforeMount(async () => {
 <template>
    <v-layout>
       <!-- Sidenav -->
-      <v-navigation-drawer permanent :width="220">
+      <v-navigation-drawer permanent :width="240">
          <v-list nav>
-            <v-list-item prepend-icon="mdi-text-box-multiple" title="Posts" value="posts" to="/"></v-list-item>
-            <v-list-item prepend-icon="mdi-list-box" title="Topics" value="topics" to="/topics"></v-list-item>
-            <v-list-item prepend-icon="mdi-information" title="About" value="about" to="/about"></v-list-item>
+            <v-list-item
+               prepend-icon="mdi-text-box-multiple"
+               title="Posts"
+               value="posts"
+               to="/">
+            </v-list-item>
+            <v-list-item
+               prepend-icon="mdi-list-box"
+               title="Topics"
+               value="topics"
+               to="/topics">
+            </v-list-item>
+            <v-list-item
+               prepend-icon="mdi-information"
+               title="About"
+               value="about"
+               to="/about">
+            </v-list-item>
          </v-list>
       </v-navigation-drawer>
 
