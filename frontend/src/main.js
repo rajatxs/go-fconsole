@@ -23,6 +23,22 @@ const vuetify = createVuetify({
    },
    theme: {
       defaultTheme: getString('theme', 'light'),
+      themes: {
+         light: {
+            dark: false,
+            colors: {
+              primary: '#00695f',
+              secondary: '#ffea00'
+            }
+         },
+         dark: {
+            dark: true,
+            colors: {
+              primary: '#009688',
+              secondary: '#ffea00'
+            }
+         },
+      },
    },
 });
 

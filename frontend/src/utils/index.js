@@ -85,3 +85,16 @@ export function getPostEmbeddedImageUrl(imagePath) {
 export function getPostTopicImageUrl(imagePath) {
    return `https://res.cloudinary.com/${getVariable('CLOUDINARY_ID')}/image/upload/c_scale,h_400/${imagePath}.webp`
 }
+
+/**
+ * Returns computed slug from given `text`
+ * @param {string} text 
+ */
+export function computeSlug(text) {
+   return text
+      .toLowerCase()
+      .replace(/\s+/g, '-')
+      .replace(/[^a-z0-9-]/g, '')
+      .replace(/-+/g, '-')
+      .replace(/^-|-$/g, '');
+}
