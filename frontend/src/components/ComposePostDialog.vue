@@ -1,5 +1,6 @@
 <script setup>
-import {defineProps, defineEmits} from 'vue';
+import {defineProps, defineEmits, ref, onMounted} from 'vue';
+import { getPublicTopics } from '../utils/topic';
 import FAB from './FAB.vue';
 
 const props = defineProps({
@@ -8,7 +9,27 @@ const props = defineProps({
       default: false,
    },
 });
-const emit = defineEmits(['open', 'close', 'saved'])
+const emit = defineEmits(['open', 'close', 'saved']);
+
+/** @type {import('vue').Ref<string>} */
+const title = ref('');
+
+/** @type {import('vue').Ref<string>} */
+const slug = ref('');
+
+/** @type {import('vue').Ref<string|null>} */
+const topic = ref(null);
+
+/** @type {import('vue').Ref<string>} */
+const desc = ref('');
+
+/** @type {import('vue').Ref<string[]>} */
+const tags = ref([]);
+
+const steppers = ref(['Metadata', 'Body']);
+
+/** @type {import('vue').Ref<{title: string, value: string}[]>} */
+const topics = ref([]);
 
 function close() {
    emit('close');
@@ -17,6 +38,22 @@ function close() {
 async function savePost() {
    emit('saved');
 }
+
+function renderTopics() {
+   /** @type {any[]} */
+   const _topics = getPublicTopics();
+
+   topics.value = _topics.map(_topic => {
+      return {
+         title: _topic.name,
+         value: _topic.id,
+      }
+   });
+}
+
+onMounted(function() {
+   renderTopics();
+});
 </script>
 
 <template>
@@ -45,7 +82,42 @@ async function savePost() {
                <v-btn variant="text" @click="savePost"> Save </v-btn>
             </v-toolbar-items>
          </v-toolbar>
-         <v-divider></v-divider>
+
+         <v-form class="mt-4">
+            <v-container>
+               <v-stepper :items="steppers">
+                  <template v-slot:item.1>
+                     <v-card flat>
+                        <v-text-field v-model="title" label="Title"></v-text-field>
+                        <v-row>
+                           <v-col cols="12" sm="6">
+                              <v-select
+                                 v-model="topic"
+                                 label="Topic"
+                                 :items="topics">
+                              </v-select>
+                           </v-col>
+                           <v-col cols="12" sm="6">
+                              <v-text-field v-model="slug" label="Slug (Auto Generated)" readonly></v-text-field>
+                           </v-col>
+                        </v-row>
+                        <v-textarea v-model="desc" label="Description"></v-textarea>
+
+                        <v-combobox
+                           v-model="tags"
+                           label="Tags"
+                           multiple
+                           chips>
+                        </v-combobox>
+                     </v-card>
+                  </template>
+                  
+                  <template v-slot:item.2>
+                     <v-card title="Body" flat>...</v-card>
+                  </template>
+               </v-stepper>
+            </v-container>
+         </v-form>
       </v-card>
    </v-dialog>
 </template>
