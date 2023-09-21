@@ -113,7 +113,7 @@ onMounted(async function () {
 
       <v-row>
          <v-col cols="12" sm="4">
-            <v-tabs v-model="scope">
+            <v-tabs v-model="scope" color="primary">
                <v-tab value="public"><v-icon>mdi-earth</v-icon>&nbsp;Public</v-tab>
                <v-tab value="private"><v-icon>mdi-lock</v-icon>&nbsp;Private</v-tab>
             </v-tabs>
