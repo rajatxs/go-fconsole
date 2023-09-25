@@ -6,7 +6,7 @@ import {OpenBrowser} from '../../wailsjs/go/main/App';
 let fetchErrorSnackbar = ref(false);
 let sendFeedbackSnackbar = ref(false);
 
-/** @type {any} */
+/** @type {import('vue').Ref<any>} */
 let versions = ref({});
 
 async function sendFeedback() {

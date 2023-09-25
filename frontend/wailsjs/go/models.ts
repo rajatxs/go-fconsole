@@ -73,3 +73,72 @@ export namespace models {
 
 }
 
+export namespace types {
+	
+	export class AppPublicConfigVariables {
+	    ENV: string;
+	    ADMIN_ID: string;
+	    CLOUDINARY_ID: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new AppPublicConfigVariables(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.ENV = source["ENV"];
+	        this.ADMIN_ID = source["ADMIN_ID"];
+	        this.CLOUDINARY_ID = source["CLOUDINARY_ID"];
+	    }
+	}
+	export class AppVersions {
+	    app: string;
+	    date: string;
+	    wails: string;
+	    go: string;
+	    webview2: string;
+	    os: string;
+	    arch: string;
+	    uname: string;
+	    homedir: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new AppVersions(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.app = source["app"];
+	        this.date = source["date"];
+	        this.wails = source["wails"];
+	        this.go = source["go"];
+	        this.webview2 = source["webview2"];
+	        this.os = source["os"];
+	        this.arch = source["arch"];
+	        this.uname = source["uname"];
+	        this.homedir = source["homedir"];
+	    }
+	}
+	export class GetPostsMetadataOptions {
+	    private: boolean;
+	    topic: string;
+	    sortBy: string;
+	    limit: number;
+	    skip: number;
+	
+	    static createFrom(source: any = {}) {
+	        return new GetPostsMetadataOptions(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.private = source["private"];
+	        this.topic = source["topic"];
+	        this.sortBy = source["sortBy"];
+	        this.limit = source["limit"];
+	        this.skip = source["skip"];
+	    }
+	}
+
+}
+

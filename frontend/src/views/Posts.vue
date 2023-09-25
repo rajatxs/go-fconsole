@@ -1,6 +1,6 @@
 <script setup>
 import {ref, onMounted, watch} from 'vue';
-import {GetPostsMetadata, GetPostCount} from '../../wailsjs/go/main/App';
+import {GetPostsMetadata, GetPostCount} from '../../wailsjs/go/services/PostService';
 import {groupArray, truncateText, getPostCoverImageURL} from '../utils';
 import {getTopicName, getPublicTopics} from '../utils/topic';
 import ComposePostDialog from '../components/ComposePostDialog.vue';
@@ -71,13 +71,13 @@ async function fetchPosts() {
    loading.value = true;
 
    try {
-      const _posts = await GetPostsMetadata(
-         scope.value,
-         topic.value,
-         sort.value,
-         limit.value,
-         (pageIndex.value - 1) * limit.value
-      );
+      const _posts = await GetPostsMetadata({
+         private: scope.value === 'private',
+         topic: topic.value,
+         sortBy: sort.value,
+         limit: limit.value,
+         skip: (pageIndex.value - 1) * limit.value
+      });
 
       if (Array.isArray(_posts)) {
          const _postCount = await GetPostCount(scope.value, false);
