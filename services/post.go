@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"log"
+	"time"
 
 	"github.com/rajatxs/go-fconsole/db"
 	"github.com/rajatxs/go-fconsole/models"
@@ -148,9 +149,66 @@ func (ps *PostService) GetPostCount(scope string, includeDeleted bool) (int64, e
 }
 
 // Inserts new post document into posts collection
-func (ps *PostService) CreatePost(payload map[string]interface{}) {
-	post := bson.M{
-		"title": payload["title"],
+func (ps *PostService) CreatePost(payload *types.CreatePostPayload) (any, error) {
+	var (
+		authorId primitive.ObjectID
+		related  = []string{}
+		err      error
+	)
+
+	body := primitive.Binary{
+		Subtype: bson.TypeBinaryGeneric,
+		Data:    []byte(payload.Body),
 	}
-	db.MongoDb().Collection("posts").InsertOne(ps.Ctx, post)
+
+	if authorId, err = primitive.ObjectIDFromHex(payload.AuthorId); err != nil {
+		return nil, err
+	}
+
+	newPost := bson.M{
+		"title":    payload.Title,
+		"slug":     payload.Slug,
+		"desc":     payload.Desc,
+		"topic":    payload.Topic,
+		"tags":     payload.Tags,
+		"body":     body,
+		"stars":    0,
+		"authorId": authorId,
+		"public":   payload.Public,
+		"deleted":  false,
+		"coverImage": &models.PostCoverImage{
+			Id:      payload.CoverImageId,
+			Path:    payload.CoverImagePath,
+			RefName: payload.CoverImageRefName,
+			RefUrl:  payload.CoverImageRefUrl,
+		},
+		"related":   related,
+		"createdAt": time.Now(),
+		"updatedAt": time.Now(),
+	}
+	db.MongoDb().Collection("posts").InsertOne(ps.Ctx, newPost)
+
+	return nil, err
+}
+
+// Set specified scope of post
+func (ps *PostService) UpdatePostScope(rawid string, scope string) error {
+	var (
+		oid    primitive.ObjectID
+		err    error
+		filter bson.D
+		update bson.M
+		public bool = (scope == "public")
+	)
+
+	if oid, err = primitive.ObjectIDFromHex(rawid); err != nil {
+		return err
+	} else {
+		filter = bson.D{{Key: "_id", Value: oid}}
+		update = bson.M{"$set": bson.M{"public": public}}
+	}
+
+	// Update scope
+	_, err = db.MongoDb().Collection("posts").UpdateOne(ps.Ctx, filter, update)
+	return err
 }
