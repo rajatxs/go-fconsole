@@ -69,15 +69,19 @@ onMounted(function() {
    <v-dialog v-model="props.visible" fullscreen :scrim="false" scrollable transition="dialog-bottom-transition">
       <template v-slot:activator="{ props }">
          <FAB>
-            <v-btn 
-               fab 
-               fixed 
-               size="large" 
-               color="secondary" 
-               icon="mdi-pencil" 
-               elevation="8" 
-               @click="emit('open')">
-            </v-btn>
+            <v-tooltip text="Compose">
+               <template v-slot:activator="{ props }">
+                  <v-btn 
+                     v-bind="props"
+                     fixed 
+                     size="large" 
+                     color="secondary" 
+                     icon="mdi-pencil"
+                     elevation="8" 
+                     @click="emit('open')">
+                  </v-btn>
+               </template>
+            </v-tooltip>
          </FAB>
       </template>
       <v-card>
@@ -123,25 +127,25 @@ onMounted(function() {
                            chips>
                         </v-combobox>
 
-                        <v-row class="mb-2" style="min-height: 240px;">
-                           <v-col cols="12" sm="6">
-                              <!-- <v-img
-                                 aspect-ratio="16/9"
-                                 src="https://cdn.vuetifyjs.com/images/parallax/material.jpg"
-                                 cover>
-                              </v-img> -->
-                              <v-sheet class="d-flex flex-column justify-center align-center" height="100%" border="md" :rounded="true">
-                                 <v-btn variant="text">Upload Cover Image</v-btn>
-                              </v-sheet>
+                        <v-row class="mb-2">
+                           <v-col cols="12" sm="4">
+                              <v-file-input
+                                 label="Select Cover Image"
+                                 variant="filled"
+                                 prepend-icon="mdi-image"
+                                 accept="image/jpeg">
+                              </v-file-input>
                            </v-col>
-                           <v-col cols="12" sm="6">
+                           <v-col cols="12" sm="4">
                               <v-text-field label="Reference Name (optional)"></v-text-field>
-                              <v-text-field label="Reference URL (optional)"></v-text-field>
+                           </v-col>
+                           <v-col cols="12" sm="4">
+                              <v-text-field label="Reference Name (optional)"></v-text-field>
                            </v-col>
                         </v-row>
                      </v-card>
                   </template>
-                  
+
                   <template v-slot:item.2>
                      <v-card title="Body" flat>...</v-card>
                   </template>
