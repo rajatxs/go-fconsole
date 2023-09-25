@@ -1,9 +1,11 @@
 package main
 
 import (
+	"context"
 	"embed"
 	"log"
 
+	"github.com/rajatxs/go-fconsole/services"
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
@@ -16,6 +18,9 @@ func runApp() error {
 	// Create an instance of the app structure
 	app := NewApp()
 
+	// Create service instances
+	postService := services.NewPostService()
+
 	// Create application with options
 	// TODO: Add `backgroundColor` property
 	err := wails.Run(&options.App{
@@ -27,10 +32,14 @@ func runApp() error {
 		AssetServer: &assetserver.Options{
 			Assets: assets,
 		},
-		OnStartup:  app.startup,
+		OnStartup: func(ctx context.Context) {
+			app.startup(ctx)
+			postService.Ctx = ctx
+		},
 		OnShutdown: app.terminate,
 		Bind: []interface{}{
 			app,
+			postService,
 		},
 	})
 
