@@ -1,6 +1,6 @@
 <script setup>
 import {ref, onMounted, watch} from 'vue';
-import {GetPostsMetadata, GetPostCount} from '../../wailsjs/go/services/PostService';
+import {GetPostsMetadata, GetPostCount, UpdatePostScope} from '../../wailsjs/go/services/PostService';
 import {groupArray, truncateText, getPostCoverImageURL} from '../utils';
 import {getTopicName, getPublicTopics} from '../utils/topic';
 import ComposePostDialog from '../components/ComposePostDialog.vue';
@@ -19,6 +19,9 @@ const limit = ref(6);
 const pageIndex = ref(1);
 const maxPageIndex = ref(0);
 const fetchErrorSnackbar = ref(false);
+const copySuccessSnackbar = ref(false);
+const copyErrorSnackbar = ref(false);
+const errorScopeUpdateSnackbar = ref(false);
 
 /** @type {import('vue').Ref<any[]>} */
 const topicOptions = ref([]);
@@ -94,6 +97,53 @@ async function fetchPosts() {
    loading.value = false;
 }
 
+/**
+ * Opens preview of selected post in a new tab or window
+ * @param {string} slug - Post slug
+ */
+function openPreview(slug) {
+   window.open(`https://www.fivemin.in/${slug}`, '_blank');
+}
+
+/**
+ * Writes given post id to clipboard
+ * @param {string} id - Post Id
+ */
+async function copyId(id) {
+   try {
+      await navigator.clipboard.writeText(id);
+      copySuccessSnackbar.value = true;
+   } catch (error) {
+      copyErrorSnackbar.value = true;
+   }
+}
+
+/**
+ * Makes given post private
+ * @param {string} id - Post Id
+ */
+async function makePrivate(id) {
+   try {
+      await UpdatePostScope(id, "private");
+      await fetchPosts();
+   } catch (error) {
+      errorScopeUpdateSnackbar.value = true;
+   }
+}
+
+/**
+ * Makes given post public
+ * @param {string} id - Post Id
+ */
+async function makePublic(id) {
+   try {
+      await UpdatePostScope(id, "public");
+      await fetchPosts();
+   } catch (error) {
+      errorScopeUpdateSnackbar.value = true;
+   }
+}
+
 watch([topic, sort, pageIndex], fetchPosts);
 watch(scope, async function () {
    // reset page index to avoid conflict
@@ -157,8 +207,49 @@ onMounted(async function () {
                      {{ truncateText(post.desc, 72) }}
                   </v-card-text>
 
-                  <v-card-actions>
-                     <v-btn color="primary">Edit</v-btn>
+                  <v-card-actions class="flex flex-row justify-space-between pl-2 pr-2">
+                     <div>
+                        <v-btn 
+                           v-show="scope === 'public'" 
+                           color="primary" 
+                           @click="openPreview(post.slug)">
+                           Preview
+                        </v-btn>
+                        <v-btn color="primary">Edit</v-btn>
+                     </div>
+
+                     <v-menu :width="180" location="start">
+                        <template v-slot:activator="{ props }">
+                           <v-btn v-bind="props" icon="mdi-dots-vertical"></v-btn>
+                        </template>
+
+                        <v-list>
+                           <v-list-item 
+                              title="Copy ID" 
+                              value="copy-id"
+                              @click="copyId(post._id)">
+                           </v-list-item>
+                           
+                           <v-list-item 
+                              v-if="scope === 'public'" 
+                              title="Make Private" 
+                              value="make-private"
+                              @click="makePrivate(post._id)">
+                           </v-list-item>
+
+                           <v-list-item 
+                              v-else 
+                              title="Make Public" 
+                              value="make-private"
+                              @click="makePublic(post._id)">
+                           </v-list-item>
+
+                           <v-list-item 
+                              title="Delete" 
+                              value="preview">
+                           </v-list-item>
+                        </v-list>
+                     </v-menu>
                   </v-card-actions>
                </v-card>
             </v-col>
@@ -172,5 +263,8 @@ onMounted(async function () {
  
       <v-pagination v-model="pageIndex" :length="maxPageIndex" class="mt-5"></v-pagination>
       <v-snackbar v-model="fetchErrorSnackbar" :timeout="5000"> Couldn't get posts </v-snackbar>
+      <v-snackbar v-model="copySuccessSnackbar" :timeout="3000"> Copied to clipboard </v-snackbar>
+      <v-snackbar v-model="copyErrorSnackbar" :timeout="3000"> Couldn't write to clipboard </v-snackbar>
+      <v-snackbar v-model="errorScopeUpdateSnackbar" :timeout="3000"> Couldn't update scope </v-snackbar>
    </v-container>
 </template>
