@@ -1,7 +1,9 @@
 <script setup>
 import {defineProps, defineEmits, ref, onMounted, watch} from 'vue';
+import { CreatePost } from '../../wailsjs/go/services/PostService';
 import { computeSlug } from '../utils';
 import { getPublicTopics } from '../utils/topic';
+import { getAdminId } from '../utils/env';
 import FAB from './FAB.vue';
 
 const props = defineProps({
@@ -11,6 +13,10 @@ const props = defineProps({
    },
 });
 const emit = defineEmits(['open', 'close', 'saved']);
+
+const saving = ref(false);
+
+const saveErrorSnackbar = ref(false);
 
 /** @type {import('vue').Ref<string>} */
 const title = ref('');
@@ -27,6 +33,12 @@ const desc = ref('');
 /** @type {import('vue').Ref<string[]>} */
 const tags = ref([]);
 
+/** @type {import('vue').Ref<string>} */
+const coverImageRefName = ref('');
+
+/** @type {import('vue').Ref<string>} */
+const coverImageRefUrl = ref('');
+
 const steppers = ref(['Metadata', 'Body']);
 
 /** @type {import('vue').Ref<{title: string, value: string}[]>} */
@@ -37,6 +49,31 @@ function close() {
 }
 
 async function savePost() {
+   saving.value = true;
+
+   try {
+      console.log("saving...")
+      const res = await CreatePost({
+         title: title.value,
+         slug: slug.value,
+         desc: desc.value,
+         topic: topic.value || 'other',
+         tags: tags.value,
+         body: '',
+         public: true,
+         coverImageId: '',
+         coverImagePath: '',
+         coverImageRefName: coverImageRefName.value,
+         coverImageRefUrl: coverImageRefUrl.value,
+         authorId: getAdminId(),
+      });
+      console.log("saved.", res);
+   } catch (error) {
+      console.error(error);
+      saveErrorSnackbar.value = true;
+   }
+
+   saving.value = false;
    emit('saved');
 }
 
@@ -92,7 +129,7 @@ onMounted(function() {
             <v-toolbar-title>Compose</v-toolbar-title>
             <v-spacer></v-spacer>
             <v-toolbar-items>
-               <v-btn variant="text" @click="savePost">Done</v-btn>
+               <v-btn :loading="saving" variant="text" @click="savePost">Save</v-btn>
             </v-toolbar-items>
          </v-toolbar>
 
@@ -137,10 +174,10 @@ onMounted(function() {
                               </v-file-input>
                            </v-col>
                            <v-col cols="12" sm="4">
-                              <v-text-field label="Reference Name (optional)"></v-text-field>
+                              <v-text-field v-model="coverImageRefName" label="Reference Name (optional)"></v-text-field>
                            </v-col>
                            <v-col cols="12" sm="4">
-                              <v-text-field label="Reference Name (optional)"></v-text-field>
+                              <v-text-field v-model="coverImageRefUrl" label="Reference URL (optional)"></v-text-field>
                            </v-col>
                         </v-row>
                      </v-card>
@@ -153,6 +190,7 @@ onMounted(function() {
             </v-container>
          </v-form>
       </v-card>
+      <v-snackbar v-model="saveErrorSnackbar" :timeout="5000">Couldn't save post</v-snackbar>
    </v-dialog>
 </template>
 
