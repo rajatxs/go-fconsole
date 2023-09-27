@@ -9,6 +9,7 @@ import (
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
+	"github.com/wailsapp/wails/v2/pkg/options/windows"
 )
 
 //go:embed all:frontend/dist
@@ -24,11 +25,15 @@ func runApp() error {
 	// Create application with options
 	// TODO: Add `backgroundColor` property
 	err := wails.Run(&options.App{
-		Title:     "Console",
-		MinWidth:  700,
-		Width:     1300,
-		MinHeight: 500,
-		Height:    700,
+		Title:            "Console",
+		Width:            1300,
+		Height:           800,
+		MinWidth:         700,
+		MinHeight:        500,
+		DisableResize:    false,
+		Fullscreen:       false,
+		Frameless:        false,
+		StartHidden:      false,
 		AssetServer: &assetserver.Options{
 			Assets: assets,
 		},
@@ -40,6 +45,11 @@ func runApp() error {
 		Bind: []interface{}{
 			app,
 			postService,
+		},
+		Windows: &windows.Options{
+			WebviewIsTransparent: false,
+			WindowIsTranslucent: false,
+			DisableWindowIcon: true,
 		},
 	})
 
