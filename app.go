@@ -42,8 +42,8 @@ func (a *App) terminate(ctx context.Context) {
 	}
 }
 
-// Opens given url into default browser
-func (a *App) OpenBrowser(url string, newTab bool) error {
+// OpenBrowser opens given url into default browser
+func (a *App) OpenBrowser(url string) error {
 	var cmd *exec.Cmd
 
 	switch runtime.GOOS {
@@ -58,7 +58,7 @@ func (a *App) OpenBrowser(url string, newTab bool) error {
 	return cmd.Start()
 }
 
-// Returns public app config variables
+// GetAppConfigVariables returns public app config variables
 func (a *App) GetAppConfigVariables() (env *types.AppPublicConfigVariables) {
 	env = &types.AppPublicConfigVariables{}
 
@@ -68,7 +68,7 @@ func (a *App) GetAppConfigVariables() (env *types.AppPublicConfigVariables) {
 	return env
 }
 
-// Returns app version information
+// GetVersions returns app version information
 func (a *App) GetVersions() (ver *types.AppVersions) {
 	ver = &types.AppVersions{}
 

@@ -17,14 +17,14 @@ type PostService struct {
 	Ctx context.Context
 }
 
-// Creates new instance of PostService
+// NewPostService creates new instance of PostService
 func NewPostService() *PostService {
 	return &PostService{
 		Ctx: nil,
 	}
 }
 
-// Returns Post metadata by given Raw ID
+// GetPostMetadataById returns Post metadata by given Raw ID
 // By default this method will return public post
 func (ps *PostService) GetPostMetadataById(rawid string, private bool) (*models.PostMetadataDocument, error) {
 	var (
@@ -60,7 +60,7 @@ func (ps *PostService) GetPostMetadataById(rawid string, private bool) (*models.
 	}
 }
 
-// Returns list of metadata of posts
+// GetPostsMetadata returns list of metadata of posts
 // Need to provide result limit (default is 0)
 func (ps *PostService) GetPostsMetadata(params *types.GetPostsMetadataOptions) ([]models.PostMetadataDocument, error) {
 	var (
@@ -69,7 +69,7 @@ func (ps *PostService) GetPostsMetadata(params *types.GetPostsMetadataOptions) (
 		collName  string
 		sortProp  string
 		sortOrder int
-		filter    primitive.D = bson.D{}
+		filter = bson.D{}
 	)
 
 	if params.Private {
@@ -115,8 +115,6 @@ func (ps *PostService) GetPostsMetadata(params *types.GetPostsMetadataOptions) (
 		Find(ps.Ctx, filter, nil, findOpts); err != nil {
 		log.Println(err)
 	} else {
-		defer cur.Close(ps.Ctx)
-
 		for cur.Next(ps.Ctx) {
 			var post models.PostMetadataDocument
 
@@ -129,12 +127,16 @@ func (ps *PostService) GetPostsMetadata(params *types.GetPostsMetadataOptions) (
 		if err = cur.Err(); err != nil {
 			return nil, err
 		}
+
+		if err = cur.Close(ps.Ctx); err != nil {
+			return nil, err
+		}
 	}
 
 	return posts, nil
 }
 
-// Returns number of post (public + private) in posts collection
+// GetPostCount returns number of post (public + private) in posts collection
 // By default the result will not include count of deleted posts
 func (ps *PostService) GetPostCount(scope string, includeDeleted bool) (int64, error) {
 	return db.
@@ -148,11 +150,10 @@ func (ps *PostService) GetPostCount(scope string, includeDeleted bool) (int64, e
 			})
 }
 
-// Inserts new post document into posts collection
+// CreatePost inserts new post document into posts collection
 func (ps *PostService) CreatePost(payload *types.CreatePostPayload) (any, error) {
 	var (
 		authorId primitive.ObjectID
-		related  = []string{}
 		err      error
 	)
 
@@ -182,23 +183,23 @@ func (ps *PostService) CreatePost(payload *types.CreatePostPayload) (any, error)
 			RefName: payload.CoverImageRefName,
 			RefUrl:  payload.CoverImageRefUrl,
 		},
-		"related":   related,
+		"related":   []string{},
 		"createdAt": time.Now(),
 		"updatedAt": time.Now(),
 	}
-	db.MongoDb().Collection("posts").InsertOne(ps.Ctx, newPost)
+	_, err = db.MongoDb().Collection("posts").InsertOne(ps.Ctx, newPost)
 
 	return nil, err
 }
 
-// Set specified scope of post
+// UpdatePostScope set specified scope of post
 func (ps *PostService) UpdatePostScope(rawid string, scope string) error {
 	var (
 		oid    primitive.ObjectID
 		err    error
 		filter bson.D
 		update bson.M
-		public bool = (scope == "public")
+		public = scope == "public"
 	)
 
 	if oid, err = primitive.ObjectIDFromHex(rawid); err != nil {
@@ -213,7 +214,7 @@ func (ps *PostService) UpdatePostScope(rawid string, scope string) error {
 	return err
 }
 
-// Sets post delete flag by given post rawid
+// SetPostDeleteFlag sets post delete flag by given post rawid
 func (ps *PostService) SetPostDeleteFlag(rawid string, value bool) error {
 	var (
 		oid    primitive.ObjectID
