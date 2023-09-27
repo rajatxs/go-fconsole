@@ -11,4 +11,6 @@ export function GetPostMetadataById(arg1:string,arg2:boolean):Promise<models.Pos
 
 export function GetPostsMetadata(arg1:types.GetPostsMetadataOptions):Promise<Array<models.PostMetadataDocument>>;
 
+export function SetPostDeleteFlag(arg1:string,arg2:boolean):Promise<void>;
+
 export function UpdatePostScope(arg1:string,arg2:string):Promise<void>;
