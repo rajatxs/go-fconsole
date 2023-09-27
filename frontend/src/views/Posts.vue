@@ -1,6 +1,6 @@
 <script setup>
 import {ref, onMounted, watch} from 'vue';
-import {GetPostsMetadata, GetPostCount, UpdatePostScope} from '../../wailsjs/go/services/PostService';
+import {GetPostsMetadata, GetPostCount, UpdatePostScope, SetPostDeleteFlag} from '../../wailsjs/go/services/PostService';
 import {groupArray, truncateText, getPostCoverImageURL} from '../utils';
 import {getTopicName, getPublicTopics} from '../utils/topic';
 import ComposePostDialog from '../components/ComposePostDialog.vue';
@@ -9,19 +9,23 @@ import Loader from '../components/Loader.vue';
 /** @type {import('vue').Ref<any[][]>} */
 const postsGroups = ref([]);
 
+const deletePostConfirmDialog = ref(false);
 const composeMode = ref(false);
 
 const loading = ref(true);
 const topic = ref('all');
 const scope = ref('public');
 const sort = ref('newest');
-const limit = ref(6);
+const limit = ref(9);
+const deletePostId = ref('');
 const pageIndex = ref(1);
 const maxPageIndex = ref(0);
 const fetchErrorSnackbar = ref(false);
 const copySuccessSnackbar = ref(false);
 const copyErrorSnackbar = ref(false);
 const errorScopeUpdateSnackbar = ref(false);
+const deleteSuccessSnackbar = ref(false);
+const deleteErrorSnackbar = ref(false);
 
 /** @type {import('vue').Ref<any[]>} */
 const topicOptions = ref([]);
@@ -84,9 +88,8 @@ async function fetchPosts() {
 
       if (Array.isArray(_posts)) {
          const _postCount = await GetPostCount(scope.value, false);
-         const _group = groupArray(_posts, 3);
 
-         postsGroups.value = _group;
+         postsGroups.value = groupArray(_posts, 3);
          maxPageIndex.value = Math.ceil(_postCount / limit.value);
       } else {
          postsGroups.value = [];
@@ -144,11 +147,27 @@ async function makePublic(id) {
    }
 }
 
+/** Deletes post by given post id */
+async function deletePost() {
+   try {
+      await SetPostDeleteFlag(deletePostId.value, true);
+      deleteSuccessSnackbar.value = true;
+      await fetchPosts();
+   } catch (error) {
+      deleteErrorSnackbar.value = true;
+   }
+
+   deletePostId.value = '';
+}
+
 watch([topic, sort, pageIndex], fetchPosts);
 watch(scope, async function () {
    // reset page index to avoid conflict
    pageIndex.value = 1;
    await fetchPosts();
+});
+watch(deletePostId, function(newPostId) {
+   deletePostConfirmDialog.value = (newPostId.length > 0)
 });
 
 onMounted(async function () {
@@ -159,24 +178,41 @@ onMounted(async function () {
 
 <template>
    <v-container>
-      <div class="text-h4 mb-5">Posts</div>
-
       <v-row>
-         <v-col cols="12" sm="4">
-            <v-tabs v-model="scope" color="primary">
-               <v-tab value="public"><v-icon>mdi-earth</v-icon>&nbsp;Public</v-tab>
-               <v-tab value="private"><v-icon>mdi-lock</v-icon>&nbsp;Private</v-tab>
-            </v-tabs>
+         <v-col cols="12" sm="3">
+            <div class="text-h4 m-0">Posts</div>
          </v-col>
-         <v-col cols="12" sm="4">
-            <v-select label="Topic" :items="topicOptions" v-model="topic"></v-select>
+
+         <!-- Scope selection button group -->
+         <v-col cols="12" sm="3">
+            <v-btn-toggle
+               v-model="scope"
+               color="primary-darken-1"
+               rounded="lg"
+               group>
+               <v-btn value="public">
+                  <v-icon icon="mdi-earth"></v-icon>&nbsp;
+                  <span>Public</span>
+               </v-btn>
+               <v-btn value="private">
+                  <v-icon icon="mdi-lock"></v-icon>&nbsp;
+                  <span>Private</span>
+               </v-btn>
+            </v-btn-toggle>
          </v-col>
-         <v-col cols="12" sm="4">
-            <v-select label="Sort By" :items="sortOptions" v-model="sort"></v-select>
+
+         <!-- Topic selection dropdown -->
+         <v-col cols="12" sm="3">
+            <v-select v-model="topic" :items="topicOptions" label="Topic"></v-select>
+         </v-col>
+
+         <!-- Sort filter -->
+         <v-col cols="12" sm="3">
+            <v-select v-model="sort" :items="sortOptions" label="Sort By"></v-select>
          </v-col>
       </v-row>
 
-      <v-container>
+      <v-container class="px-0">
          <Loader v-if="loading" message="Getting posts" />
          <v-sheet
             v-else-if="!loading && postsGroups.length === 0"
@@ -185,13 +221,13 @@ onMounted(async function () {
             class="d-flex flex-column align-center justify-center flex-wrap text-center mx-auto px-4">
             <div class="text-h6">No Posts</div>
          </v-sheet>
+
          <v-row v-else v-for="(group, groupIndex) of postsGroups" :key="groupIndex">
             <v-col v-for="post of group" :key="post._id" cols="12" sm="4">
-               <v-card class="mx-auto" :elevation="2">
+               <v-card class="mx-auto">
                   <v-img
-                     class="align-end text-white"
-                     height="200"
                      :src="getPostCoverImageURL(post.coverImage.path)"
+                     height="200"
                      cover>
                   </v-img>
 
@@ -207,17 +243,19 @@ onMounted(async function () {
                      {{ truncateText(post.desc, 72) }}
                   </v-card-text>
 
-                  <v-card-actions class="flex flex-row justify-space-between pl-2 pr-2">
+                  <v-card-actions class="flex flex-row justify-space-between pl-3 pr-3">
+                     <!-- Post primary actions -->
                      <div>
                         <v-btn 
                            v-show="scope === 'public'" 
-                           color="primary" 
+                           color="primary-darken-4"
                            @click="openPreview(post.slug)">
                            Preview
                         </v-btn>
-                        <v-btn color="primary">Edit</v-btn>
+                        <v-btn color="primary-darken-4">Edit</v-btn>
                      </div>
 
+                     <!-- Post context menu -->
                      <v-menu :width="180" location="start">
                         <template v-slot:activator="{ props }">
                            <v-btn v-bind="props" icon="mdi-dots-vertical"></v-btn>
@@ -246,7 +284,9 @@ onMounted(async function () {
 
                            <v-list-item 
                               title="Delete" 
-                              value="preview">
+                              value="preview"
+                              class="text-error"
+                              @click="deletePostId = post._id">
                            </v-list-item>
                         </v-list>
                      </v-menu>
@@ -260,11 +300,73 @@ onMounted(async function () {
          :visible="composeMode" 
          @open="composeMode = true"
          @close="composeMode = false" />
+
+      <!-- Delete Post Dialog -->
+      <v-dialog v-model="deletePostConfirmDialog" :width="460" persistent>
+         <v-card>
+            <v-card-text>Are you sure you want to delete this post?</v-card-text>
+            <v-card-actions>
+               <v-spacer></v-spacer>
+               <v-btn variant="text" @click="deletePostId = ''">
+                  No
+               </v-btn>
+
+               <v-btn
+                  color="error"
+                  variant="tonal"
+                  @click="deletePost()">
+                  Yes
+               </v-btn>
+            </v-card-actions>
+         </v-card>
+      </v-dialog>
  
-      <v-pagination v-model="pageIndex" :length="maxPageIndex" class="mt-5"></v-pagination>
-      <v-snackbar v-model="fetchErrorSnackbar" :timeout="5000"> Couldn't get posts </v-snackbar>
-      <v-snackbar v-model="copySuccessSnackbar" :timeout="3000"> Copied to clipboard </v-snackbar>
-      <v-snackbar v-model="copyErrorSnackbar" :timeout="3000"> Couldn't write to clipboard </v-snackbar>
-      <v-snackbar v-model="errorScopeUpdateSnackbar" :timeout="3000"> Couldn't update scope </v-snackbar>
+      <v-pagination
+         v-model="pageIndex"
+         :length="maxPageIndex"
+         class="mt-5">
+      </v-pagination>
+
+      <v-snackbar
+         v-model="fetchErrorSnackbar"
+         :timeout="5000"
+         color="error">
+         Couldn't get posts
+      </v-snackbar>
+
+      <v-snackbar
+         v-model="copySuccessSnackbar"
+         :timeout="3000"
+         color="primary">
+         Copied to clipboard
+      </v-snackbar>
+
+      <v-snackbar
+         v-model="copyErrorSnackbar"
+         :timeout="3000"
+         color="error">
+         Couldn't write to clipboard
+      </v-snackbar>
+
+      <v-snackbar
+         v-model="errorScopeUpdateSnackbar"
+         :timeout="3000"
+         color="error">
+         Couldn't update scope
+      </v-snackbar>
+
+      <v-snackbar
+         v-model="deleteSuccessSnackbar"
+         :timeout="3000"
+         color="primary">
+         Post deleted successfully
+      </v-snackbar>
+
+      <v-snackbar
+         v-model="deleteErrorSnackbar"
+         :timeout="3000"
+         color="error">
+         Couldn't delete post
+      </v-snackbar>
    </v-container>
 </template>

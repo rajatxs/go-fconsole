@@ -7,6 +7,28 @@ import {setVariables} from './utils/env';
 import {setString} from './utils/kvstore';
 
 const loading = ref(true);
+const collapsed = ref(true);
+const drawerMenuItems = ref([
+   {
+      title: "Posts",
+      value: "posts",
+      path: "/",
+      icon: "mdi-text-box-outline",
+   },
+   {
+      title: "Topics",
+      value: "topics",
+      path: "/topics",
+      icon: "mdi-format-list-bulleted",
+   },
+   {
+      title: "About",
+      value: "about",
+      path: "/about",
+      icon: "mdi-information-outline",
+   },
+]);
+
 const theme = useTheme();
 
 /** Load default configuration from main process */
@@ -42,6 +64,10 @@ function updateTheme(event) {
    }
 }
 
+function toggleNavigationDrawer() {
+   collapsed.value = !collapsed.value;
+}
+
 onBeforeMount(async () => {
    const themeMediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
    themeMediaQuery.onchange = updateTheme;
@@ -54,26 +80,31 @@ onBeforeMount(async () => {
 <template>
    <v-layout>
       <!-- Sidenav -->
-      <v-navigation-drawer permanent :width="240">
+      <v-navigation-drawer :width="240" :rail="collapsed" permanent>
          <v-list nav>
             <v-list-item
-               prepend-icon="mdi-text-box-multiple"
-               title="Posts"
-               value="posts"
-               to="/">
+               prepend-icon="mdi-menu"
+               @click="toggleNavigationDrawer">
             </v-list-item>
-            <v-list-item
-               prepend-icon="mdi-list-box"
-               title="Topics"
-               value="topics"
-               to="/topics">
-            </v-list-item>
-            <v-list-item
-               prepend-icon="mdi-information"
-               title="About"
-               value="about"
-               to="/about">
-            </v-list-item>
+
+            <template v-for="item of drawerMenuItems" :key="item.path">
+               <v-tooltip
+                  :text="item.title"
+                  :disabled="!collapsed"
+                  :open-delay="500">
+                  <template v-slot:activator="{ props }">
+                     <v-list-item
+                        v-bind="props"
+                        :prepend-icon="item.icon"
+                        :title="item.title"
+                        :value="item.value"
+                        active-color="primary-darken-3"
+                        :to="item.path">
+                     </v-list-item>
+                  </template>
+               </v-tooltip>
+            </template>
+
          </v-list>
       </v-navigation-drawer>
 

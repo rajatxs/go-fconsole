@@ -35,7 +35,7 @@ onMounted(fetchVersionInfo);
 
       <v-row>
          <v-col cols="6">
-            <v-list lines="two">
+            <v-list lines="two" class="bg-transparent">
                <v-list-item title="Version" :subtitle="versions.app"></v-list-item>
                <v-list-item title="Date" :subtitle="versions.date"></v-list-item>
                <v-list-item title="Wails Version" :subtitle="versions.wails"></v-list-item>
@@ -56,7 +56,7 @@ onMounted(fetchVersionInfo);
                <a
                   href="https://www.fivemin.in"
                   target="_blank"
-                  class="text-decoration-none text-primary">
+                  class="text-decoration-none text-primary-darken-4">
                   <span>Fivemin Website</span>&nbsp;<v-icon size="x-small">mdi-open-in-new</v-icon>
                </a>
             </p>
@@ -65,12 +65,12 @@ onMounted(fetchVersionInfo);
                <a
                   href="https://github.com/rajatxs/go-fconsole"
                   target="_blank"
-                  class="text-decoration-none text-primary">
+                  class="text-decoration-none text-primary-darken-4">
                   <span>GithHub Repository</span>&nbsp;<v-icon size="x-small">mdi-open-in-new</v-icon>
                </a>
             </div>
             <br />
-            <v-btn color="primary" @click="sendFeedback">
+            <v-btn color="primary-darken-1" @click="sendFeedback">
                Send Feedback
             </v-btn>
          </v-col>

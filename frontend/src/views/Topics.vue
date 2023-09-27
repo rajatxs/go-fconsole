@@ -41,7 +41,7 @@ async function fetchTopics() {
    loading.value = true;
 
    try {
-      let _topics = [];
+      let _topics;
 
       if (scope.value === "public") {
          _topics = getPublicTopics();
@@ -62,17 +62,15 @@ onMounted(fetchTopics);
 
 <template>
    <v-container>
-      <div class="text-h4 mb-5">Topics</div>
-
       <v-row>
-         <v-col cols="12" sm="4"> </v-col>
-         <v-col cols="12" sm="4"> </v-col>
-         <v-col cols="12" sm="4">
+         <v-col cols="12" sm="6"><div class="text-h4 m-0">Topics</div></v-col>
+         <v-col cols="12" sm="3"></v-col>
+         <v-col cols="12" sm="3">
             <v-select label="Scope" :items="scopeOptions" v-model="scope"></v-select>
          </v-col>
       </v-row>
 
-      <v-container>
+      <v-container class="px-0">
          <Loader v-if="loading" message="Getting topics" />
          <v-row v-else v-for="(group, groupIndex) of topicGroups" :key="groupIndex">
             <v-col v-for="topic of group" :key="topic.id" cols="12" sm="4">
@@ -85,7 +83,7 @@ onMounted(fetchTopics);
                   </v-card-item>
 
                   <v-card-actions v-if="scope === 'public'">
-                     <v-btn color="primary" @click="preview(topic.id)">Preview</v-btn>
+                     <v-btn color="primary-darken-4" @click="preview(topic.id)">Preview</v-btn>
                   </v-card-actions>
                </v-card>
             </v-col>

@@ -112,7 +112,7 @@ onMounted(function() {
                      v-bind="props"
                      fixed 
                      size="large" 
-                     color="secondary" 
+                     color="primary" 
                      icon="mdi-pencil"
                      elevation="8" 
                      @click="emit('open')">
