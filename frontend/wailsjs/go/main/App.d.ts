@@ -6,4 +6,4 @@ export function GetAppConfigVariables():Promise<types.AppPublicConfigVariables>;
 
 export function GetVersions():Promise<types.AppVersions>;
 
-export function OpenBrowser(arg1:string,arg2:boolean):Promise<void>;
+export function OpenBrowser(arg1:string):Promise<void>;

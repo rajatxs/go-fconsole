@@ -173,6 +173,22 @@ export namespace types {
 	        this.skip = source["skip"];
 	    }
 	}
+	export class PostImageFile {
+	    publicId: string;
+	    assetId: string;
+	    format: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new PostImageFile(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.publicId = source["publicId"];
+	        this.assetId = source["assetId"];
+	        this.format = source["format"];
+	    }
+	}
 
 }
 

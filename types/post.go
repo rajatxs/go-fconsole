@@ -22,3 +22,9 @@ type CreatePostPayload struct {
 	CoverImageRefUrl  string   `json:"coverImageRefUrl"`
 	AuthorId          string   `json:"authorId"`
 }
+
+type PostImageFile struct {
+	PublicId string `json:"publicId"`
+	AssetId  string `json:"assetId"`
+	Format   string `json:"format"`
+}

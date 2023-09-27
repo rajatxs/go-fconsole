@@ -1,6 +1,6 @@
 <script setup>
 import {defineProps, defineEmits, ref, onMounted, watch} from 'vue';
-import { CreatePost } from '../../wailsjs/go/services/PostService';
+import { CreatePost, UploadPostCoverImage } from '../../wailsjs/go/services/PostService';
 import { computeSlug } from '../utils';
 import { getPublicTopics } from '../utils/topic';
 import { getAdminId } from '../utils/env';
@@ -46,6 +46,29 @@ const topics = ref([]);
 
 function close() {
    emit('close');
+}
+
+async function uploadCoverImage(event) {
+   const reader = new FileReader();
+   const [ file ] = event.target.files;
+
+   if (!file) {
+      return;
+   }
+
+   reader.onload = async function() {
+      // @ts-ignore
+      const binaryData = new Uint8Array(reader.result);
+
+      /** @type {number[]} */
+      const data = Array.from(binaryData);
+
+      console.log("bin", data);
+      const result = await UploadPostCoverImage(data);
+      console.log("result", result);
+   }
+
+   reader.readAsArrayBuffer(file);
 }
 
 async function savePost() {
@@ -167,10 +190,11 @@ onMounted(function() {
                         <v-row class="mb-2">
                            <v-col cols="12" sm="4">
                               <v-file-input
-                                 label="Select Cover Image"
+                                 label="Upload Cover Image"
                                  variant="filled"
                                  prepend-icon="mdi-image"
-                                 accept="image/jpeg">
+                                 accept="image/jpeg"
+                                 @change="uploadCoverImage">
                               </v-file-input>
                            </v-col>
                            <v-col cols="12" sm="4">
@@ -178,6 +202,16 @@ onMounted(function() {
                            </v-col>
                            <v-col cols="12" sm="4">
                               <v-text-field v-model="coverImageRefUrl" label="Reference URL (optional)"></v-text-field>
+                           </v-col>
+                        </v-row>
+                        
+                        <v-row class="mb-2">
+                           <v-col cols="12" sm="6">
+                              
+                           </v-col>
+                           <v-col cols="12" sm="6">
+                              <v-text-field label="Asset ID"></v-text-field>
+                              <v-text-field label="Public ID"></v-text-field>
                            </v-col>
                         </v-row>
                      </v-card>

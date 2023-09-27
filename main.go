@@ -25,21 +25,27 @@ func runApp() error {
 	// Create application with options
 	// TODO: Add `backgroundColor` property
 	err := wails.Run(&options.App{
-		Title:            "Console",
-		Width:            1300,
-		Height:           800,
-		MinWidth:         700,
-		MinHeight:        500,
-		DisableResize:    false,
-		Fullscreen:       false,
-		Frameless:        false,
-		StartHidden:      false,
+		Title:         "Console",
+		Width:         1300,
+		Height:        800,
+		MinWidth:      700,
+		MinHeight:     500,
+		DisableResize: false,
+		Fullscreen:    false,
+		Frameless:     false,
+		StartHidden:   false,
 		AssetServer: &assetserver.Options{
 			Assets: assets,
 		},
 		OnStartup: func(ctx context.Context) {
+			var err error
+
 			app.startup(ctx)
 			postService.Ctx = ctx
+
+			if err = services.InitCloudinary(); err != nil {
+				log.Println(err)
+			}
 		},
 		OnShutdown: app.terminate,
 		Bind: []interface{}{
@@ -48,8 +54,8 @@ func runApp() error {
 		},
 		Windows: &windows.Options{
 			WebviewIsTransparent: false,
-			WindowIsTranslucent: false,
-			DisableWindowIcon: true,
+			WindowIsTranslucent:  false,
+			DisableWindowIcon:    true,
 		},
 	})
 

@@ -3,15 +3,18 @@ module github.com/rajatxs/go-fconsole
 go 1.18
 
 require (
+	github.com/cloudinary/cloudinary-go/v2 v2.5.1
 	github.com/wailsapp/wails/v2 v2.6.0
 	go.mongodb.org/mongo-driver v1.12.1
 )
 
 require (
 	github.com/bep/debounce v1.2.1 // indirect
+	github.com/creasty/defaults v1.5.1 // indirect
 	github.com/go-ole/go-ole v1.2.6 // indirect
 	github.com/golang/snappy v0.0.1 // indirect
 	github.com/google/uuid v1.3.0 // indirect
+	github.com/gorilla/schema v1.2.0 // indirect
 	github.com/jchv/go-winloader v0.0.0-20210711035445-715c2860da7e // indirect
 	github.com/klauspost/compress v1.13.6 // indirect
 	github.com/labstack/echo/v4 v4.10.2 // indirect

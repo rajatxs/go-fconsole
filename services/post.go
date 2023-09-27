@@ -1,10 +1,12 @@
 package services
 
 import (
+	"bytes"
 	"context"
 	"log"
 	"time"
 
+	"github.com/cloudinary/cloudinary-go/v2/api/uploader"
 	"github.com/rajatxs/go-fconsole/db"
 	"github.com/rajatxs/go-fconsole/models"
 	"github.com/rajatxs/go-fconsole/types"
@@ -69,7 +71,7 @@ func (ps *PostService) GetPostsMetadata(params *types.GetPostsMetadataOptions) (
 		collName  string
 		sortProp  string
 		sortOrder int
-		filter = bson.D{}
+		filter    = bson.D{}
 	)
 
 	if params.Private {
@@ -233,4 +235,27 @@ func (ps *PostService) SetPostDeleteFlag(rawid string, value bool) error {
 	// Update document
 	_, err = db.MongoDb().Collection("posts").UpdateOne(ps.Ctx, filter, update)
 	return err
+}
+
+// UploadPostCoverImage uploads cover image and returns uploaded file response
+func (ps *PostService) UploadPostCoverImage(imageData []byte) (res *types.PostImageFile, err error) {
+	var (
+		uploadResult *uploader.UploadResult
+		file         = bytes.NewReader(imageData)
+		params       = uploader.UploadParams{
+			ResourceType: "image",
+			Folder:       "fivemin-prod/post-cover-images",
+		}
+	)
+
+	if uploadResult, err = CloudinaryInstance().Upload.Upload(ps.Ctx, file, params); err != nil {
+		return nil, err
+	} else {
+		res = &types.PostImageFile{
+			PublicId: uploadResult.PublicID,
+			AssetId:  uploadResult.AssetID,
+			Format:   uploadResult.Format,
+		}
+		return res, nil
+	}
 }
