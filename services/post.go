@@ -212,3 +212,24 @@ func (ps *PostService) UpdatePostScope(rawid string, scope string) error {
 	_, err = db.MongoDb().Collection("posts").UpdateOne(ps.Ctx, filter, update)
 	return err
 }
+
+// Sets post delete flag by given post rawid
+func (ps *PostService) SetPostDeleteFlag(rawid string, value bool) error {
+	var (
+		oid    primitive.ObjectID
+		err    error
+		filter bson.D
+		update bson.M
+	)
+
+	if oid, err = primitive.ObjectIDFromHex(rawid); err != nil {
+		return err
+	} else {
+		filter = bson.D{{Key: "_id", Value: oid}}
+		update = bson.M{"$set": bson.M{"deleted": value}}
+	}
+
+	// Update document
+	_, err = db.MongoDb().Collection("posts").UpdateOne(ps.Ctx, filter, update)
+	return err
+}
