@@ -160,6 +160,13 @@ async function deletePost() {
    deletePostId.value = '';
 }
 
+async function onNewPost() {
+   if (composeMode.value) {
+      composeMode.value = false;
+   }
+   await fetchPosts();
+}
+
 watch([topic, sort, pageIndex], fetchPosts);
 watch(scope, async function () {
    // reset page index to avoid conflict
@@ -298,6 +305,7 @@ onMounted(async function () {
 
       <ComposePostDialog 
          :visible="composeMode" 
+         @saved="onNewPost"
          @open="composeMode = true"
          @close="composeMode = false" />
 
