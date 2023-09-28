@@ -6,6 +6,10 @@ export function CreatePost(arg1) {
   return window['go']['services']['PostService']['CreatePost'](arg1);
 }
 
+export function DeletePostCoverImage(arg1) {
+  return window['go']['services']['PostService']['DeletePostCoverImage'](arg1);
+}
+
 export function GetPostCount(arg1, arg2) {
   return window['go']['services']['PostService']['GetPostCount'](arg1, arg2);
 }
