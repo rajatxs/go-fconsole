@@ -76,6 +76,10 @@ const coverImageUrl = computed(function() {
    return getPostCoverImageURL(coverImagePublicId.value);
 });
 
+const allowToSubmit = computed(function() {
+   return (title.value.length && slug.value.length)
+});
+
 function close() {
    emit('close');
 }
@@ -217,6 +221,7 @@ onMounted(function() {
                   :loading="saving" 
                   :width="120" 
                   :prepend-icon="publicScope? 'mdi-upload': 'mdi-file-check-outline'"
+                  :disabled="!allowToSubmit"
                   @click="savePost">
                   {{ publicScope? 'Publish': 'Save' }}
                </v-btn>
