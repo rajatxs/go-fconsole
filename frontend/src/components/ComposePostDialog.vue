@@ -1,7 +1,7 @@
 <script setup>
-import {defineProps, defineEmits, ref, onMounted, watch} from 'vue';
-import { CreatePost, UploadPostCoverImage } from '../../wailsjs/go/services/PostService';
-import { computeSlug } from '../utils';
+import {defineProps, defineEmits, ref, onMounted, watch, computed} from 'vue';
+import { CreatePost, UploadPostCoverImage, DeletePostCoverImage } from '../../wailsjs/go/services/PostService';
+import { computeSlug, getFileByteArray, getPostCoverImageURL } from '../utils';
 import { getPublicTopics } from '../utils/topic';
 import { getAdminId } from '../utils/env';
 import FAB from './FAB.vue';
@@ -39,58 +39,107 @@ const coverImageRefName = ref('');
 /** @type {import('vue').Ref<string>} */
 const coverImageRefUrl = ref('');
 
+/** @type {import('vue').Ref<string>} */
+const coverImagePublicId = ref('');
+
+/** @type {import('vue').Ref<string>} */
+const coverImageAssetId = ref('');
+
 const steppers = ref(['Metadata', 'Body']);
 
 /** @type {import('vue').Ref<{title: string, value: string}[]>} */
 const topics = ref([]);
+
+/** @type {import('vue').Ref<boolean>} */
+const loadingUploadImage = ref(false);
+
+/** @type {import('vue').Ref<boolean>} */
+const loadingRemoveImage = ref(false);
+
+/** @type {import('vue').Ref<boolean>} */
+const coverImageUploadSuccessSnackbar = ref(false);
+
+/** @type {import('vue').Ref<boolean>} */
+const coverImageUploadErrorSnackbar = ref(false);
+
+const coverImageUploaded = computed(function() {
+   return (
+      coverImagePublicId.value.length > 0 && 
+      coverImageAssetId.value.length > 0
+   );
+});
+
+const coverImageUrl = computed(function() {
+   return getPostCoverImageURL(coverImagePublicId.value);
+});
 
 function close() {
    emit('close');
 }
 
 async function uploadCoverImage(event) {
-   const reader = new FileReader();
    const [ file ] = event.target.files;
+
+   /** @type {number[]} */
+   let byteArray = new Array();
+
+   /** @type {import('../../wailsjs/go/models').types.PostImageFile} */
+   let result;
 
    if (!file) {
       return;
    }
 
-   reader.onload = async function() {
-      // @ts-ignore
-      const binaryData = new Uint8Array(reader.result);
+   loadingUploadImage.value = true;
 
-      /** @type {number[]} */
-      const data = Array.from(binaryData);
+   try {
+      byteArray = await getFileByteArray(file);
+      result = await UploadPostCoverImage(byteArray);
 
-      console.log("bin", data);
-      const result = await UploadPostCoverImage(data);
-      console.log("result", result);
+      coverImagePublicId.value = result.publicId;
+      coverImageAssetId.value = result.assetId;
+      coverImageUploadSuccessSnackbar.value = true;
+   } catch (error) {
+      console.error(error);
+      coverImageUploadErrorSnackbar.value = true;
    }
 
-   reader.readAsArrayBuffer(file);
+   loadingUploadImage.value = false;
+}
+
+async function removeCoverImage() {
+   loadingRemoveImage.value = true;
+
+   try {
+      await DeletePostCoverImage(coverImagePublicId.value);
+
+      coverImagePublicId.value = '';
+      coverImageAssetId.value = '';
+   } catch (error) {
+      console.error(error);
+   }
+
+   loadingRemoveImage.value = false;
 }
 
 async function savePost() {
    saving.value = true;
 
    try {
-      console.log("saving...")
-      const res = await CreatePost({
+      await CreatePost({
          title: title.value,
          slug: slug.value,
          desc: desc.value,
          topic: topic.value || 'other',
          tags: tags.value,
-         body: '',
+         body: 'Hello, world',
          public: true,
-         coverImageId: '',
-         coverImagePath: '',
+         coverImageId: coverImageAssetId.value,
+         coverImagePath: coverImagePublicId.value,
          coverImageRefName: coverImageRefName.value,
          coverImageRefUrl: coverImageRefUrl.value,
          authorId: getAdminId(),
       });
-      console.log("saved.", res);
    } catch (error) {
       console.error(error);
       saveErrorSnackbar.value = true;
@@ -188,30 +237,80 @@ onMounted(function() {
                         </v-combobox>
 
                         <v-row class="mb-2">
-                           <v-col cols="12" sm="4">
-                              <v-file-input
-                                 label="Upload Cover Image"
-                                 variant="filled"
-                                 prepend-icon="mdi-image"
-                                 accept="image/jpeg"
-                                 @change="uploadCoverImage">
-                              </v-file-input>
+                           <v-col cols="12" sm="6">
+                              <v-card v-if="coverImageUploaded">
+                                 <v-img
+                                    :src="coverImageUrl"
+                                    alt="Cover Image"
+                                    aspect-ratio="16/9"
+                                    width="auto"
+                                    cover>
+                                 </v-img>
+
+                                 <v-expansion-panels>
+                                    <v-expansion-panel>
+                                       <v-expansion-panel-title>
+                                          <v-icon icon="mdi-information"></v-icon>&nbsp;<span class="font-weight-bold">Cover Image Info</span>
+                                       </v-expansion-panel-title>
+                                       <v-expansion-panel-text>
+                                          <p>
+                                             <span class="font-weight-bold">Asset Id:</span>
+                                             <br />
+                                             <code>{{ coverImageAssetId }}</code>
+                                          </p>
+                                          <p>
+                                             <span class="font-weight-bold">Public Id:</span>
+                                             <br />
+                                             <code>{{ coverImagePublicId }}</code>
+                                          </p>
+                                       </v-expansion-panel-text>
+                                    </v-expansion-panel>
+                                 </v-expansion-panels>
+                              </v-card>
+
+                              <template v-else>
+                                 <v-file-input
+                                    v-show="!loadingUploadImage"
+                                    label="Upload Cover Image"
+                                    variant="filled"
+                                    prepend-icon="mdi-image"
+                                    accept="image/jpeg"
+                                    @change="uploadCoverImage">
+                                 </v-file-input>
+                                 <v-row
+                                    v-show="loadingUploadImage"
+                                    class="fill-height"
+                                    align-content="center"
+                                    justify="center">
+                                    <v-col
+                                       class="text-subtitle-1 text-center"
+                                       cols="12">
+                                       Uploading Cover Image
+                                    </v-col>
+                                    <v-col cols="6">
+                                       <v-progress-linear
+                                          color="primary-darken-2"
+                                          height="6"
+                                          indeterminate
+                                          rounded>
+                                       </v-progress-linear>
+                                    </v-col>
+                                 </v-row>
+                              </template>
                            </v-col>
-                           <v-col cols="12" sm="4">
+
+                           <v-col cols="12" sm="6">
                               <v-text-field v-model="coverImageRefName" label="Reference Name (optional)"></v-text-field>
-                           </v-col>
-                           <v-col cols="12" sm="4">
                               <v-text-field v-model="coverImageRefUrl" label="Reference URL (optional)"></v-text-field>
-                           </v-col>
-                        </v-row>
-                        
-                        <v-row class="mb-2">
-                           <v-col cols="12" sm="6">
-                              
-                           </v-col>
-                           <v-col cols="12" sm="6">
-                              <v-text-field label="Asset ID"></v-text-field>
-                              <v-text-field label="Public ID"></v-text-field>
+                              <v-btn 
+                                 v-show="coverImageUploaded"
+                                 :loading="loadingRemoveImage"
+                                 variant="text" 
+                                 color="error" 
+                                 prepend-icon="mdi-image-remove-outline"
+                                 @click="removeCoverImage">
+                                 Remove Cover Image
+                              </v-btn>
                            </v-col>
                         </v-row>
                      </v-card>
@@ -225,6 +324,8 @@ onMounted(function() {
          </v-form>
       </v-card>
       <v-snackbar v-model="saveErrorSnackbar" :timeout="5000">Couldn't save post</v-snackbar>
+      <v-snackbar v-model="coverImageUploadSuccessSnackbar" :timeout="3000" color="primary">Cover Image Uploaded</v-snackbar>
+      <v-snackbar v-model="coverImageUploadErrorSnackbar" :timeout="3000" color="error">Couldn't upload Cover Image</v-snackbar>
    </v-dialog>
 </template>
 
