@@ -98,3 +98,26 @@ export function computeSlug(text) {
       .replace(/-+/g, '-')
       .replace(/^-|-$/g, '');
 }
+
+/**
+ * Returns byte array from blob
+ * @param {Blob} file - File object
+ * @returns {Promise<number[]>}
+ */
+export function getFileByteArray(file) {
+   return new Promise(function (resolve, reject) {
+      const reader = new FileReader();
+
+      reader.onerror = reject;
+      reader.onload = function() {
+         // @ts-ignore
+         const binaryData = new Uint8Array(reader.result);
+
+         /** @type {number[]} */
+         const data = Array.from(binaryData);
+
+         resolve(data);
+      }
+      reader.readAsArrayBuffer(file);
+   });
+}
