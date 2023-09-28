@@ -33,6 +33,9 @@ const desc = ref('');
 /** @type {import('vue').Ref<string[]>} */
 const tags = ref([]);
 
+/** @type {import('vue').Ref<boolean>} */
+const publicScope = ref(true);
+
 /** @type {import('vue').Ref<string>} */
 const coverImageRefName = ref('');
 
@@ -133,7 +136,7 @@ async function savePost() {
          topic: topic.value || 'other',
          tags: tags.value,
          body: 'Hello, world',
-         public: true,
+         public: publicScope.value,
          coverImageId: coverImageAssetId.value,
          coverImagePath: coverImagePublicId.value,
          coverImageRefName: coverImageRefName.value,
@@ -200,8 +203,23 @@ onMounted(function() {
             </v-btn>
             <v-toolbar-title>Compose</v-toolbar-title>
             <v-spacer></v-spacer>
+            <v-toolbar-items class="d-flex flex-row align-center mr-3">
+               <v-switch 
+                  v-model="publicScope"
+                  label="Public" 
+                  color="white" 
+                  style="grid-template-areas: unset;">
+               </v-switch>
+            </v-toolbar-items>
+
             <v-toolbar-items>
-               <v-btn :loading="saving" variant="text" @click="savePost">Save</v-btn>
+               <v-btn 
+                  :loading="saving" 
+                  :width="120" 
+                  :prepend-icon="publicScope? 'mdi-upload': 'mdi-file-check-outline'"
+                  @click="savePost">
+                  {{ publicScope? 'Publish': 'Save' }}
+               </v-btn>
             </v-toolbar-items>
          </v-toolbar>
 
