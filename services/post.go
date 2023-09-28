@@ -6,6 +6,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/cloudinary/cloudinary-go/v2/api/admin"
 	"github.com/cloudinary/cloudinary-go/v2/api/uploader"
 	"github.com/rajatxs/go-fconsole/db"
 	"github.com/rajatxs/go-fconsole/models"
@@ -258,4 +259,11 @@ func (ps *PostService) UploadPostCoverImage(imageData []byte) (res *types.PostIm
 		}
 		return res, nil
 	}
+}
+
+// DeletePostCoverImage removes post cover image from storage bucket
+func (ps *PostService) DeletePostCoverImage(publicId string) (res *admin.DeleteAssetsResult, err error) {
+	return CloudinaryInstance().Admin.DeleteAssets(ps.Ctx, admin.DeleteAssetsParams{
+		PublicIDs: []string{publicId},
+	})
 }
