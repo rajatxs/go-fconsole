@@ -3,7 +3,7 @@ import {ref, onMounted, watch} from 'vue';
 import {GetPostsMetadata, GetPostCount, UpdatePostScope, SetPostDeleteFlag} from '../../wailsjs/go/services/PostService';
 import {groupArray, truncateText, getPostCoverImageURL} from '../utils';
 import {getTopicName, getPublicTopics} from '../utils/topic';
-import ComposePostDialog from '../components/ComposePostDialog.vue';
+import PostEditor from '../components/PostEditor/index.vue';
 import Loader from '../components/Loader.vue';
 
 /** @type {import('vue').Ref<any[][]>} */
@@ -303,7 +303,7 @@ onMounted(async function () {
          </v-row>
       </v-container>
 
-      <ComposePostDialog 
+      <PostEditor
          :visible="composeMode" 
          @saved="onNewPost"
          @open="composeMode = true"
