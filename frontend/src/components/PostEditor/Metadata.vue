@@ -2,7 +2,7 @@
 import {ref, computed, onMounted} from 'vue';
 import {state} from './store.js';
 import {getPublicTopics} from '../../utils/topic';
-import {UploadPostCoverImage, DeletePostCoverImage} from '../../../wailsjs/go/services/PostService';
+import {UploadPostCoverImage, DeletePostImage} from '../../../wailsjs/go/services/PostService';
 import {getFileByteArray, getPostCoverImageURL, computeSlug} from '../../utils';
 
 /** @type {import('vue').Ref<boolean>} */
@@ -89,7 +89,7 @@ async function onCoverImageRemove() {
    loadingRemoveImage.value = true;
 
    try {
-      await DeletePostCoverImage(state.coverImagePublicId);
+      await DeletePostImage(state.coverImagePublicId);
 
       state.coverImagePublicId = '';
       state.coverImageAssetId = '';
