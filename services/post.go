@@ -3,6 +3,7 @@ package services
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"log"
 	"time"
 
@@ -238,14 +239,14 @@ func (ps *PostService) SetPostDeleteFlag(rawid string, value bool) error {
 	return err
 }
 
-// UploadPostCoverImage uploads cover image and returns uploaded file response
-func (ps *PostService) UploadPostCoverImage(imageData []byte) (res *types.PostImageFile, err error) {
+// UploadPostImage uploads post related image and returns uploaded file response
+func (ps *PostService) UploadPostImage(folderName string, imageData []byte) (res *types.PostImageFile, err error) {
 	var (
 		uploadResult *uploader.UploadResult
 		file         = bytes.NewReader(imageData)
 		params       = uploader.UploadParams{
 			ResourceType: "image",
-			Folder:       "fivemin-prod/post-cover-images",
+			Folder:       fmt.Sprintf("fivemin-prod/%s", folderName),
 		}
 	)
 
@@ -261,8 +262,18 @@ func (ps *PostService) UploadPostCoverImage(imageData []byte) (res *types.PostIm
 	}
 }
 
-// DeletePostCoverImage removes post cover image from storage bucket
-func (ps *PostService) DeletePostCoverImage(publicId string) (res *admin.DeleteAssetsResult, err error) {
+// UploadPostCoverImage uploads cover image and returns uploaded file response
+func (ps *PostService) UploadPostCoverImage(imageData []byte) (res *types.PostImageFile, err error) {
+	return ps.UploadPostImage("post-cover-images", imageData)
+}
+
+// UploadPostEmbedImage uploads post embedded image and returns uploaded file response
+func (ps *PostService) UploadPostEmbedImage(imageData []byte) (res *types.PostImageFile, err error) {
+	return ps.UploadPostImage("post-images", imageData)
+}
+
+// DeletePostImage removes post related image from storage bucket
+func (ps *PostService) DeletePostImage(publicId string) (res *admin.DeleteAssetsResult, err error) {
 	return CloudinaryInstance().Admin.DeleteAssets(ps.Ctx, admin.DeleteAssetsParams{
 		PublicIDs: []string{publicId},
 	})
