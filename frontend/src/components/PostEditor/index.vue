@@ -5,6 +5,7 @@ import {getAdminId} from '../../utils/env';
 import { state, clearMetadata } from './store';
 import FAB from '../FAB.vue';
 import Metadata from './Metadata.vue';
+import BodyView from './Body.vue';
 
 const props = defineProps({
    visible: {
@@ -121,7 +122,7 @@ async function savePost() {
                   </template>
 
                   <template v-slot:item.2>
-                     <v-card title="Body" flat>...</v-card>
+                     <BodyView />
                   </template>
                </v-stepper>
             </v-container>
