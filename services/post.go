@@ -3,6 +3,8 @@ package services
 import (
 	"bytes"
 	"context"
+	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"time"
@@ -159,11 +161,20 @@ func (ps *PostService) CreatePost(payload *types.CreatePostPayload) (any, error)
 	var (
 		authorId primitive.ObjectID
 		err      error
+		body     interface{}
 	)
 
-	body := primitive.Binary{
-		Subtype: bson.TypeBinaryGeneric,
-		Data:    []byte(payload.Body),
+	if payload.Format == "md" {
+		body = primitive.Binary{
+			Subtype: bson.TypeBinaryGeneric,
+			Data:    []byte(payload.Body),
+		}
+	} else if payload.Format == "block" {
+		if err = json.Unmarshal([]byte(payload.Body), &body); err != nil {
+			return nil, err
+		}
+	} else {
+		return nil, errors.New("unsupported document format")
 	}
 
 	if authorId, err = primitive.ObjectIDFromHex(payload.AuthorId); err != nil {
@@ -177,6 +188,7 @@ func (ps *PostService) CreatePost(payload *types.CreatePostPayload) (any, error)
 		"topic":    payload.Topic,
 		"tags":     payload.Tags,
 		"body":     body,
+		"format":   payload.Format,
 		"stars":    0,
 		"authorId": authorId,
 		"public":   payload.Public,
@@ -191,8 +203,8 @@ func (ps *PostService) CreatePost(payload *types.CreatePostPayload) (any, error)
 		"createdAt": time.Now(),
 		"updatedAt": time.Now(),
 	}
-	_, err = db.MongoDb().Collection("posts").InsertOne(ps.Ctx, newPost)
 
+	_, err = db.MongoDb().Collection("posts").InsertOne(ps.Ctx, newPost)
 	return nil, err
 }
 
