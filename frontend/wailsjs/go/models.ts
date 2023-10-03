@@ -86,6 +86,7 @@ export namespace models {
 	    tags: string[];
 	    topic: string;
 	    stars: number;
+	    format: string;
 	    authorId: number[];
 	    // Go type: time
 	    createdAt: any;
@@ -106,6 +107,7 @@ export namespace models {
 	        this.tags = source["tags"];
 	        this.topic = source["topic"];
 	        this.stars = source["stars"];
+	        this.format = source["format"];
 	        this.authorId = source["authorId"];
 	        this.createdAt = this.convertValues(source["createdAt"], null);
 	        this.updatedAt = this.convertValues(source["updatedAt"], null);
@@ -186,6 +188,7 @@ export namespace types {
 	    tags: string[];
 	    topic: string;
 	    body: string;
+	    format: string;
 	    public: boolean;
 	    coverImageId: string;
 	    coverImagePath: string;
@@ -205,6 +208,7 @@ export namespace types {
 	        this.tags = source["tags"];
 	        this.topic = source["topic"];
 	        this.body = source["body"];
+	        this.format = source["format"];
 	        this.public = source["public"];
 	        this.coverImageId = source["coverImageId"];
 	        this.coverImagePath = source["coverImagePath"];

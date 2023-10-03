@@ -15,6 +15,7 @@ type CreatePostPayload struct {
 	Tags              []string `json:"tags"`
 	Topic             string   `json:"topic"`
 	Body              string   `json:"body"`
+	Format            string   `json:"format"`
 	Public            bool     `json:"public"`
 	CoverImageId      string   `json:"coverImageId"`
 	CoverImagePath    string   `json:"coverImagePath"`

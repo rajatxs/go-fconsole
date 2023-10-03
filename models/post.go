@@ -21,6 +21,7 @@ type PostMetadataDocument struct {
 	Tags       []string           `bson:"tags" json:"tags"`
 	Topic      string             `bson:"topic" json:"topic"`
 	Stars      int64              `bson:"stars" json:"stars"`
+	Format     string             `bson:"format" json:"format"`
 	AuthorId   primitive.ObjectID `bson:"authorId" json:"authorId"`
 	CreatedAt  time.Time          `bson:"createdAt" json:"createdAt"`
 	UpdatedAt  time.Time          `bson:"updatedAt" json:"updatedAt"`
