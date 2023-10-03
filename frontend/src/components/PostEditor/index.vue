@@ -1,11 +1,22 @@
 <script setup>
-import {defineProps, defineEmits, ref, computed} from 'vue';
+import {defineProps, defineEmits, ref, computed, onMounted} from 'vue';
 import {CreatePost} from '../../../wailsjs/go/services/PostService';
 import {getAdminId} from '../../utils/env';
 import { state, clearMetadata } from './store';
 import FAB from '../FAB.vue';
 import Metadata from './Metadata.vue';
 import BodyView from './Body.vue';
+
+import EditorJS from '@editorjs/editorjs';
+import Header from '@editorjs/header';
+import Paragraph from '@editorjs/paragraph';
+import List from '@editorjs/list';
+import {UploadPostEmbedImage} from '../../../wailsjs/go/services/PostService';
+import {getFileByteArray, getPostEmbeddedImageUrl} from '../../utils';
+import CustomImageTool from '../../plugins/image-tool';
+
+/** @type {import('@editorjs/editorjs').default} */
+let editor;
 
 const props = defineProps({
    visible: {
@@ -22,7 +33,13 @@ const steppers = ref(['Metadata', 'Body']);
 const loadingSavePost = ref(false);
 
 /** @type {import('vue').Ref<boolean>} */
-const saveErrorSnackbar = ref(false);
+   const saveErrorSnackbar = ref(false);
+   
+/** @type {import('vue').Ref<boolean>} */
+const imageUploadErrorSnackbar = ref(false);
+   
+/** @type {import('vue').Ref<boolean>} */
+const docComileErrorSnackbar = ref(false);
 
 const allowToSubmit = computed(function () {
    return state.title.length && state.slug.length;
@@ -32,8 +49,85 @@ function close() {
    emit('close');
 }
 
+/** @param {File} file */
+async function uploadByFile(file) {
+   /** @type {import('../../../wailsjs/go/models').types.PostImageFile} */
+   let result;
+
+   if (!file) {
+      return;
+   }
+
+   try {
+      const byteArray = await getFileByteArray(file);
+      result = await UploadPostEmbedImage(byteArray);
+
+      return {
+         success: 1,
+         file: {
+            assetId: result.assetId,
+            publicId: result.publicId,
+            url: getPostEmbeddedImageUrl(result.publicId),
+         },
+      };
+   } catch (error) {
+      imageUploadErrorSnackbar.value = true;
+      return {
+         success: 0,
+      };
+   }
+}
+
+function initEditor() {
+   editor = new EditorJS({
+      minHeight: 400,
+      readOnly: false,
+      holder: 'codex-editor',
+      autofocus: true,
+      initialBlock: 'paragraph',
+      placeholder: 'Start writing here...',
+      tools: {
+         header: {
+            class: Header,
+            config: {
+               placeholder: 'Enter a header',
+               defaultLevel: 2,
+               levels: [2, 3, 4, 5],
+            },
+         },
+         list: {
+            class: List,
+         },
+         paragraph: {
+            class: Paragraph,
+         },
+         image: {
+            // @ts-ignore
+            class: CustomImageTool,
+            config: {
+               types: 'image/jpeg',
+               uploader: { uploadByFile },
+            },
+         },
+      },
+   });
+}
+
 async function savePost() {
+   /** @type{string} */
+   let body;
+
    loadingSavePost.value = true;
+
+   try {
+      const outputData = await editor.save();
+      body = JSON.stringify(outputData);
+   } catch (error) {
+      console.error(error);
+      docComileErrorSnackbar.value = true;
+      loadingSavePost.value = false;
+      return;
+   }
 
    try {
       await CreatePost({
@@ -42,8 +136,11 @@ async function savePost() {
          desc: state.desc,
          topic: state.topic || 'other',
          tags: state.tags,
-         body: 'Hello, world',
+         body,
          public: state.publicScope,
+
+         // app supports block-style editor only
+         format: "block",
          coverImageId: state.coverImageAssetId,
          coverImagePath: state.coverImagePublicId,
          coverImageRefName: state.coverImageRefName,
@@ -122,13 +219,16 @@ async function savePost() {
                   </template>
 
                   <template v-slot:item.2>
-                     <BodyView />
+                     <BodyView @mount="initEditor" />
                   </template>
                </v-stepper>
             </v-container>
          </v-form>
       </v-card>
       <v-snackbar v-model="saveErrorSnackbar" :timeout="5000">Couldn't save post</v-snackbar>
+      <v-snackbar v-model="imageUploadErrorSnackbar" :timeout="3000" color="error">
+         Couldn't upload Image
+      </v-snackbar>
    </v-dialog>
 </template>
 
