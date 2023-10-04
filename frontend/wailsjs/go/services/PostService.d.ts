@@ -19,6 +19,8 @@ export function GetPostsMetadata(arg1:types.GetPostsMetadataOptions):Promise<Arr
 
 export function SetPostDeleteFlag(arg1:string,arg2:boolean):Promise<void>;
 
+export function UpdatePostById(arg1:string,arg2:types.UpdatePostPayload):Promise<mongo.UpdateResult>;
+
 export function UpdatePostScope(arg1:string,arg2:string):Promise<void>;
 
 export function UploadPostCoverImage(arg1:Array<number>):Promise<types.PostImageFile>;

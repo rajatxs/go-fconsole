@@ -315,6 +315,38 @@ export namespace types {
 	        this.format = source["format"];
 	    }
 	}
+	export class UpdatePostPayload {
+	    title: string;
+	    slug: string;
+	    desc: string;
+	    tags: string[];
+	    topic: string;
+	    body: {[key: string]: any};
+	    public: boolean;
+	    coverImageId: string;
+	    coverImagePath: string;
+	    coverImageRefName: string;
+	    coverImageRefUrl: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new UpdatePostPayload(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.title = source["title"];
+	        this.slug = source["slug"];
+	        this.desc = source["desc"];
+	        this.tags = source["tags"];
+	        this.topic = source["topic"];
+	        this.body = source["body"];
+	        this.public = source["public"];
+	        this.coverImageId = source["coverImageId"];
+	        this.coverImagePath = source["coverImagePath"];
+	        this.coverImageRefName = source["coverImageRefName"];
+	        this.coverImageRefUrl = source["coverImageRefUrl"];
+	    }
+	}
 
 }
 

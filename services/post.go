@@ -188,7 +188,6 @@ func (ps *PostService) CreatePost(payload *types.CreatePostPayload) (*mongo.Inse
 	var (
 		authorId primitive.ObjectID
 		err      error
-		result   *mongo.InsertOneResult
 	)
 
 	if authorId, err = primitive.ObjectIDFromHex(payload.AuthorId); err != nil {
@@ -218,8 +217,42 @@ func (ps *PostService) CreatePost(payload *types.CreatePostPayload) (*mongo.Inse
 		"updatedAt": time.Now(),
 	}
 
-	result, err = db.MongoDb().Collection("posts").InsertOne(ps.Ctx, newPost)
-	return result, err
+	return db.MongoDb().Collection("posts").InsertOne(ps.Ctx, newPost)
+}
+
+// UpdatePostById updates existing post document by given rawid
+func (ps *PostService) UpdatePostById(rawid string, payload types.UpdatePostPayload) (*mongo.UpdateResult, error) {
+	var (
+		oid    primitive.ObjectID
+		filter bson.D
+		update bson.D
+		err    error
+	)
+
+	if oid, err = primitive.ObjectIDFromHex(rawid); err != nil {
+		return nil, err
+	} else {
+		filter = bson.D{{Key: "_id", Value: oid}}
+		update = bson.D{
+			{Key: "$set", Value: bson.D{
+				{Key: "title", Value: payload.Title},
+				{Key: "slug", Value: payload.Slug},
+				{Key: "desc", Value: payload.Desc},
+				{Key: "topic", Value: payload.Topic},
+				{Key: "tags", Value: payload.Tags},
+				{Key: "body", Value: payload.Body},
+				{Key: "public", Value: payload.Public},
+				{Key: "coverImage", Value: &models.PostCoverImage{
+					Id:      payload.CoverImageId,
+					Path:    payload.CoverImagePath,
+					RefName: payload.CoverImageRefName,
+					RefUrl:  payload.CoverImageRefUrl,
+				}},
+			}},
+		}
+	}
+
+	return db.MongoDb().Collection("posts").UpdateOne(ps.Ctx, filter, update)
 }
 
 // UpdatePostScope set specified scope of post

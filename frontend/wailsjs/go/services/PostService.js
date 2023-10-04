@@ -30,6 +30,10 @@ export function SetPostDeleteFlag(arg1, arg2) {
   return window['go']['services']['PostService']['SetPostDeleteFlag'](arg1, arg2);
 }
 
+export function UpdatePostById(arg1, arg2) {
+  return window['go']['services']['PostService']['UpdatePostById'](arg1, arg2);
+}
+
 export function UpdatePostScope(arg1, arg2) {
   return window['go']['services']['PostService']['UpdatePostScope'](arg1, arg2);
 }
