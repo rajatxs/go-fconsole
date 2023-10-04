@@ -6,6 +6,7 @@ import Paragraph from '@editorjs/paragraph';
 import List from '@editorjs/list';
 import {
    CreatePost,
+   UpdatePostById,
    UploadPostEmbedImage,
    GetPostById,
 } from '../../../wailsjs/go/services/PostService';
@@ -102,11 +103,12 @@ async function uploadByFile(file) {
 
 function initEditor() {
    editor = new EditorJS({
+      data: state.body,
       minHeight: 400,
       readOnly: false,
       holder: 'codex-editor',
       autofocus: true,
-      initialBlock: 'paragraph',
+      defaultBlock: 'paragraph',
       placeholder: 'Start writing here...',
       tools: {
          header: {
@@ -135,37 +137,6 @@ function initEditor() {
    });
 }
 
-/**
- * Returns custom output data of editorjs
- * @returns {Promise<import('@editorjs/editorjs').OutputData>}
- */
-async function getPostBody() {
-   /** @type{import('@editorjs/editorjs').OutputData} */
-   let body;
-
-   body = await editor.save();
-
-   for (const block of body.blocks) {
-      // extract ref name and url from image caption
-      if (block.type === 'image') {
-         // remove empty space
-         const captionValue = String(block.data.caption || '').replace(/&nbsp;/g, '');
-         const [caption = '', refName = '', refUrl = ''] = captionValue
-            .split(';')
-            .map((i) => i.trim());
-
-         block.data.caption = caption;
-
-         if (block.data.file) {
-            block.data.file['refName'] = refName;
-            block.data.file['refUrl'] = refUrl;
-         }
-      }
-   }
-
-   return body;
-}
-
 /** @param {import('@editorjs/editorjs').OutputData} body  */
 async function createPost(body) {
    try {
@@ -177,7 +148,7 @@ async function createPost(body) {
          tags: state.tags,
          body,
          public: state.publicScope,
-         format: "block", // app supports block-style editor only
+         format: 'block', // app supports block-style editor only
          coverImageId: state.coverImageAssetId,
          coverImagePath: state.coverImagePublicId,
          coverImageRefName: state.coverImageRefName,
@@ -192,7 +163,24 @@ async function createPost(body) {
 
 /** @param {import('@editorjs/editorjs').OutputData} body  */
 async function updatePost(body) {
-   
+   try {
+      await UpdatePostById(props.id, {
+         title: state.title,
+         slug: state.slug,
+         desc: state.desc,
+         topic: state.topic || 'other',
+         tags: state.tags,
+         body,
+         public: state.publicScope,
+         coverImageId: state.coverImageAssetId,
+         coverImagePath: state.coverImagePublicId,
+         coverImageRefName: state.coverImageRefName,
+         coverImageRefUrl: state.coverImageRefUrl,
+      });
+   } catch (error) {
+      console.error(error);
+      saveErrorSnackbar.value = true;
+   }
 }
 
 async function savePost() {
@@ -202,7 +190,11 @@ async function savePost() {
    loadingSavePost.value = true;
 
    try {
-      body = await getPostBody();
+      if (editor) {
+         body = await editor.save();
+      } else {
+         body = state.body;
+      }
    } catch (error) {
       console.error(error);
       docComileErrorSnackbar.value = true;
