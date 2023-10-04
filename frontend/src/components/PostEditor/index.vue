@@ -11,7 +11,7 @@ import {
 } from '../../../wailsjs/go/services/PostService';
 import {getFileByteArray, getPostEmbeddedImageUrl} from '../../utils';
 import {getAdminId} from '../../utils/env';
-import {state, clearMetadata} from './store';
+import {state, setMetadata, clearMetadata} from './store';
 import CustomImageTool from '../../plugins/image-tool';
 import FAB from '../FAB.vue';
 import Metadata from './Metadata.vue';
@@ -47,6 +47,9 @@ const imageUploadErrorSnackbar = ref(false);
 /** @type {import('vue').Ref<boolean>} */
 const docComileErrorSnackbar = ref(false);
 
+/** @type {import('vue').Ref<boolean>} */
+const errorLoadData = ref(false);
+
 /** @type {import('vue').Ref<'create'|'update'>} */
 const action = computed(function () {
    return props.id.length ? 'update' : 'create';
@@ -57,6 +60,14 @@ const allowToSubmit = computed(function () {
 });
 
 function close() {
+   if (action.value === 'update') {
+      if (errorLoadData.value) {
+         errorLoadData.value = false;
+      }
+
+      clearMetadata();
+   }
+
    emit('close');
 }
 
@@ -76,8 +87,8 @@ async function uploadByFile(file) {
       return {
          success: 1,
          file: {
-            assetId: result.assetId,
-            publicId: result.publicId,
+            id: result.assetId,
+            path: result.publicId,
             url: getPostEmbeddedImageUrl(result.publicId),
          },
       };
@@ -155,6 +166,35 @@ async function getPostBody() {
    return body;
 }
 
+/** @param {import('@editorjs/editorjs').OutputData} body  */
+async function createPost(body) {
+   try {
+      await CreatePost({
+         title: state.title,
+         slug: state.slug,
+         desc: state.desc,
+         topic: state.topic || 'other',
+         tags: state.tags,
+         body,
+         public: state.publicScope,
+         format: "block", // app supports block-style editor only
+         coverImageId: state.coverImageAssetId,
+         coverImagePath: state.coverImagePublicId,
+         coverImageRefName: state.coverImageRefName,
+         coverImageRefUrl: state.coverImageRefUrl,
+         authorId: getAdminId(),
+      });
+   } catch (error) {
+      console.error(error);
+      saveErrorSnackbar.value = true;
+   }
+}
+
+/** @param {import('@editorjs/editorjs').OutputData} body  */
+async function updatePost(body) {
+   
+}
+
 async function savePost() {
    /** @type{import('@editorjs/editorjs').OutputData} */
    let body;
@@ -170,27 +210,10 @@ async function savePost() {
       return;
    }
 
-   try {
-      await CreatePost({
-         title: state.title,
-         slug: state.slug,
-         desc: state.desc,
-         topic: state.topic || 'other',
-         tags: state.tags,
-         body,
-         public: state.publicScope,
-
-         // app supports block-style editor only
-         format: "block",
-         coverImageId: state.coverImageAssetId,
-         coverImagePath: state.coverImagePublicId,
-         coverImageRefName: state.coverImageRefName,
-         coverImageRefUrl: state.coverImageRefUrl,
-         authorId: getAdminId(),
-      });
-   } catch (error) {
-      console.error(error);
-      saveErrorSnackbar.value = true;
+   if (action.value === 'create') {
+      await createPost(body);
+   } else if (action.value === 'update') {
+      await updatePost(body);
    }
 
    loadingSavePost.value = false;
@@ -208,9 +231,10 @@ watch(
       if (action.value === 'update') {
          try {
             const post = await GetPostById(props.id);
-            console.log('post', post);
+            setMetadata(post);
          } catch (error) {
             console.error(error);
+            errorLoadData.value = true;
          }
       }
    }
@@ -285,7 +309,8 @@ watch(
             </v-container>
          </v-form>
       </v-card>
-      <v-snackbar v-model="saveErrorSnackbar" :timeout="5000">Couldn't save post</v-snackbar>
+      <v-snackbar v-model="saveErrorSnackbar" :timeout="5000" color="error">Couldn't save post</v-snackbar>
+      <v-snackbar v-model="errorLoadData" :timeout="3000" color="error">Couldn't get post data</v-snackbar>
       <v-snackbar v-model="imageUploadErrorSnackbar" :timeout="3000" color="error">
          Couldn't upload Image
       </v-snackbar>
