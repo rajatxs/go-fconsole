@@ -3,8 +3,6 @@ package services
 import (
 	"bytes"
 	"context"
-	"encoding/json"
-	"errors"
 	"fmt"
 	"log"
 	"time"
@@ -16,6 +14,7 @@ import (
 	"github.com/rajatxs/go-fconsole/types"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
@@ -58,6 +57,34 @@ func (ps *PostService) GetPostMetadataById(rawid string, private bool) (*models.
 	if err = db.
 		MongoDb().
 		Collection(collName).
+		FindOne(ps.Ctx, filter).
+		Decode(&doc); err != nil {
+		return nil, err
+	} else {
+		return doc, err
+	}
+}
+
+// GetPostById returns Post document by given Raw ID
+func (ps *PostService) GetPostById(rawid string) (*models.PostDocument, error) {
+	var (
+		doc    *models.PostDocument
+		oid    primitive.ObjectID
+		filter primitive.D
+		err    error
+	)
+
+	// Parse ObjectId
+	if oid, err = primitive.ObjectIDFromHex(rawid); err != nil {
+		return nil, err
+	} else {
+		filter = bson.D{{Key: "_id", Value: oid}}
+	}
+
+	// Find single post document by _id
+	if err = db.
+		MongoDb().
+		Collection("posts").
 		FindOne(ps.Ctx, filter).
 		Decode(&doc); err != nil {
 		return nil, err
@@ -157,25 +184,12 @@ func (ps *PostService) GetPostCount(scope string, includeDeleted bool) (int64, e
 }
 
 // CreatePost inserts new post document into posts collection
-func (ps *PostService) CreatePost(payload *types.CreatePostPayload) (any, error) {
+func (ps *PostService) CreatePost(payload *types.CreatePostPayload) (*mongo.InsertOneResult, error) {
 	var (
 		authorId primitive.ObjectID
 		err      error
-		body     interface{}
+		result   *mongo.InsertOneResult
 	)
-
-	if payload.Format == "md" {
-		body = primitive.Binary{
-			Subtype: bson.TypeBinaryGeneric,
-			Data:    []byte(payload.Body),
-		}
-	} else if payload.Format == "block" {
-		if err = json.Unmarshal([]byte(payload.Body), &body); err != nil {
-			return nil, err
-		}
-	} else {
-		return nil, errors.New("unsupported document format")
-	}
 
 	if authorId, err = primitive.ObjectIDFromHex(payload.AuthorId); err != nil {
 		return nil, err
@@ -187,7 +201,7 @@ func (ps *PostService) CreatePost(payload *types.CreatePostPayload) (any, error)
 		"desc":     payload.Desc,
 		"topic":    payload.Topic,
 		"tags":     payload.Tags,
-		"body":     body,
+		"body":     payload.Body,
 		"format":   payload.Format,
 		"stars":    0,
 		"authorId": authorId,
@@ -204,8 +218,8 @@ func (ps *PostService) CreatePost(payload *types.CreatePostPayload) (any, error)
 		"updatedAt": time.Now(),
 	}
 
-	_, err = db.MongoDb().Collection("posts").InsertOne(ps.Ctx, newPost)
-	return nil, err
+	result, err = db.MongoDb().Collection("posts").InsertOne(ps.Ctx, newPost)
+	return result, err
 }
 
 // UpdatePostScope set specified scope of post

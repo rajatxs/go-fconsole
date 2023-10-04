@@ -10,6 +10,10 @@ export function DeletePostImage(arg1) {
   return window['go']['services']['PostService']['DeletePostImage'](arg1);
 }
 
+export function GetPostById(arg1) {
+  return window['go']['services']['PostService']['GetPostById'](arg1);
+}
+
 export function GetPostCount(arg1, arg2) {
   return window['go']['services']['PostService']['GetPostCount'](arg1, arg2);
 }
