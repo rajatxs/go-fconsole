@@ -1,5 +1,7 @@
 package types
 
+import "go.mongodb.org/mongo-driver/bson"
+
 type GetPostsMetadataOptions struct {
 	Private bool   `json:"private"`
 	Topic   string `json:"topic"`
@@ -14,7 +16,7 @@ type CreatePostPayload struct {
 	Desc              string   `json:"desc"`
 	Tags              []string `json:"tags"`
 	Topic             string   `json:"topic"`
-	Body              string   `json:"body"`
+	Body              bson.M   `json:"body"`
 	Format            string   `json:"format"`
 	Public            bool     `json:"public"`
 	CoverImageId      string   `json:"coverImageId"`
