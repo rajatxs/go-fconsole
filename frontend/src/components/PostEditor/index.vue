@@ -1,19 +1,21 @@
 <script setup>
-import {defineProps, defineEmits, ref, computed, onMounted} from 'vue';
-import {CreatePost} from '../../../wailsjs/go/services/PostService';
-import {getAdminId} from '../../utils/env';
-import { state, clearMetadata } from './store';
-import FAB from '../FAB.vue';
-import Metadata from './Metadata.vue';
-import BodyView from './Body.vue';
-
+import {defineProps, defineEmits, ref, computed, watch} from 'vue';
 import EditorJS from '@editorjs/editorjs';
 import Header from '@editorjs/header';
 import Paragraph from '@editorjs/paragraph';
 import List from '@editorjs/list';
-import {UploadPostEmbedImage} from '../../../wailsjs/go/services/PostService';
+import {
+   CreatePost,
+   UploadPostEmbedImage,
+   GetPostById,
+} from '../../../wailsjs/go/services/PostService';
 import {getFileByteArray, getPostEmbeddedImageUrl} from '../../utils';
+import {getAdminId} from '../../utils/env';
+import {state, clearMetadata} from './store';
 import CustomImageTool from '../../plugins/image-tool';
+import FAB from '../FAB.vue';
+import Metadata from './Metadata.vue';
+import BodyView from './Body.vue';
 
 /** @type {import('@editorjs/editorjs').default} */
 let editor;
@@ -22,6 +24,10 @@ const props = defineProps({
    visible: {
       type: Boolean,
       default: false,
+   },
+   id: {
+      type: String,
+      default: '',
    },
 });
 const emit = defineEmits(['open', 'close', 'saved']);
@@ -33,13 +39,18 @@ const steppers = ref(['Metadata', 'Body']);
 const loadingSavePost = ref(false);
 
 /** @type {import('vue').Ref<boolean>} */
-   const saveErrorSnackbar = ref(false);
-   
+const saveErrorSnackbar = ref(false);
+
 /** @type {import('vue').Ref<boolean>} */
 const imageUploadErrorSnackbar = ref(false);
-   
+
 /** @type {import('vue').Ref<boolean>} */
 const docComileErrorSnackbar = ref(false);
+
+/** @type {import('vue').Ref<'create'|'update'>} */
+const action = computed(function () {
+   return props.id.length ? 'update' : 'create';
+});
 
 const allowToSubmit = computed(function () {
    return state.title.length && state.slug.length;
@@ -106,22 +117,52 @@ function initEditor() {
             class: CustomImageTool,
             config: {
                types: 'image/jpeg',
-               uploader: { uploadByFile },
+               uploader: {uploadByFile},
             },
          },
       },
    });
 }
 
+/**
+ * Returns custom output data of editorjs
+ * @returns {Promise<import('@editorjs/editorjs').OutputData>}
+ */
+async function getPostBody() {
+   /** @type{import('@editorjs/editorjs').OutputData} */
+   let body;
+
+   body = await editor.save();
+
+   for (const block of body.blocks) {
+      // extract ref name and url from image caption
+      if (block.type === 'image') {
+         // remove empty space
+         const captionValue = String(block.data.caption || '').replace(/&nbsp;/g, '');
+         const [caption = '', refName = '', refUrl = ''] = captionValue
+            .split(';')
+            .map((i) => i.trim());
+
+         block.data.caption = caption;
+
+         if (block.data.file) {
+            block.data.file['refName'] = refName;
+            block.data.file['refUrl'] = refUrl;
+         }
+      }
+   }
+
+   return body;
+}
+
 async function savePost() {
-   /** @type{string} */
+   /** @type{import('@editorjs/editorjs').OutputData} */
    let body;
 
    loadingSavePost.value = true;
 
    try {
-      const outputData = await editor.save();
-      body = JSON.stringify(outputData);
+      body = await getPostBody();
    } catch (error) {
       console.error(error);
       docComileErrorSnackbar.value = true;
@@ -156,15 +197,33 @@ async function savePost() {
    clearMetadata();
    emit('saved');
 }
+
+watch(
+   () => props.visible,
+   async function (newState) {
+      if (!newState) {
+         return;
+      }
+
+      if (action.value === 'update') {
+         try {
+            const post = await GetPostById(props.id);
+            console.log('post', post);
+         } catch (error) {
+            console.error(error);
+         }
+      }
+   }
+);
 </script>
 
 <template>
    <v-dialog
       v-model="props.visible"
-      fullscreen
       :scrim="false"
-      scrollable
-      transition="dialog-bottom-transition">
+      transition="dialog-bottom-transition"
+      fullscreen
+      scrollable>
       <template v-slot:activator="{props}">
          <FAB>
             <v-tooltip text="Compose">
@@ -188,7 +247,8 @@ async function savePost() {
             <v-btn icon dark @click="close">
                <v-icon>mdi-close</v-icon>
             </v-btn>
-            <v-toolbar-title>Compose</v-toolbar-title>
+            <v-toolbar-title v-if="action === 'create'">Compose</v-toolbar-title>
+            <v-toolbar-title v-else>Edit</v-toolbar-title>
             <v-spacer></v-spacer>
             <v-toolbar-items class="d-flex flex-row align-center mr-3">
                <v-switch

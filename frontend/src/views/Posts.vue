@@ -18,6 +18,7 @@ const scope = ref('public');
 const sort = ref('newest');
 const limit = ref(9);
 const deletePostId = ref('');
+const editPostId = ref('');
 const pageIndex = ref(1);
 const maxPageIndex = ref(0);
 const fetchErrorSnackbar = ref(false);
@@ -161,10 +162,27 @@ async function deletePost() {
 }
 
 async function onNewPost() {
+   closePostEditor();
+   await fetchPosts();
+}
+
+/**
+ * Opens PostEditor to perform update operation
+ * @param {string} id 
+ */
+function editPost(id) {
+   editPostId.value = id;
+   composeMode.value = true;
+}
+
+function closePostEditor() {
    if (composeMode.value) {
       composeMode.value = false;
    }
-   await fetchPosts();
+
+   if (editPostId.value.length > 0) {
+      editPostId.value = '';
+   }
 }
 
 watch([topic, sort, pageIndex], fetchPosts);
@@ -259,7 +277,11 @@ onMounted(async function () {
                            @click="openPreview(post.slug)">
                            Preview
                         </v-btn>
-                        <v-btn color="primary-darken-4">Edit</v-btn>
+                        <v-btn 
+                           color="primary-darken-4" 
+                           @click="editPost(post._id)">
+                           Edit
+                        </v-btn>
                      </div>
 
                      <!-- Post context menu -->
@@ -305,9 +327,10 @@ onMounted(async function () {
 
       <PostEditor
          :visible="composeMode" 
+         :id="editPostId"
          @saved="onNewPost"
          @open="composeMode = true"
-         @close="composeMode = false" />
+         @close="closePostEditor" />
 
       <!-- Delete Post Dialog -->
       <v-dialog v-model="deletePostConfirmDialog" :width="460" persistent>
