@@ -214,6 +214,7 @@ onMounted(async function () {
                v-model="scope"
                color="primary-darken-1"
                rounded="lg"
+               mandatory
                group>
                <v-btn value="public">
                   <v-icon icon="mdi-earth"></v-icon>&nbsp;
