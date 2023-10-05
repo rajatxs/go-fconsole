@@ -4,6 +4,9 @@ import EditorJS from '@editorjs/editorjs';
 import Header from '@editorjs/header';
 import Paragraph from '@editorjs/paragraph';
 import List from '@editorjs/list';
+import Table from '@editorjs/table';
+import CodeTool from '@editorjs/code';
+import WarningTool from '@editorjs/warning';
 import {
    CreatePost,
    UpdatePostById,
@@ -132,6 +135,19 @@ function initEditor() {
                types: 'image/jpeg',
                uploader: {uploadByFile},
             },
+         },
+         table: {
+            class: Table,
+            config: {
+               rows: 3,
+               cols: 3,
+            },
+         },
+         code: {
+            class: CodeTool,
+         },
+         warning: {
+            class: WarningTool,
          },
       },
    });
