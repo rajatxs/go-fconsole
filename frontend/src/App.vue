@@ -98,8 +98,8 @@ onBeforeMount(async () => {
                         :prepend-icon="item.icon"
                         :title="item.title"
                         :value="item.value"
-                        active-color="primary-darken-3"
-                        :to="item.path">
+                        :to="item.path"
+                        color="primary-darken-3">
                      </v-list-item>
                   </template>
                </v-tooltip>
