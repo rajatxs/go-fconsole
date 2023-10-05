@@ -10,6 +10,7 @@ import (
 	"github.com/rajatxs/go-fconsole/config"
 	"github.com/rajatxs/go-fconsole/db"
 	"github.com/rajatxs/go-fconsole/types"
+	wails_runtime "github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
 // App struct
@@ -87,4 +88,9 @@ func (a *App) GetVersions() (ver *types.AppVersions) {
 	ver.Username = currentUser.Name
 	ver.HomeDir = currentUser.HomeDir
 	return ver
+}
+
+// ClipboardSetText writes given text to clipboard
+func (a *App) ClipboardSetText(text string) error {
+	return wails_runtime.ClipboardSetText(a.ctx, text)
 }

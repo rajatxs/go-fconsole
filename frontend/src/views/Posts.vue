@@ -1,6 +1,12 @@
 <script setup>
 import {ref, onMounted, watch} from 'vue';
-import {GetPostsMetadata, GetPostCount, UpdatePostScope, SetPostDeleteFlag} from '../../wailsjs/go/services/PostService';
+import {
+   GetPostsMetadata, 
+   GetPostCount, 
+   UpdatePostScope, 
+   SetPostDeleteFlag
+} from '../../wailsjs/go/services/PostService';
+import { ClipboardSetText } from '../../wailsjs/go/main/App';
 import {groupArray, truncateText, getPostCoverImageURL} from '../utils';
 import {getTopicName, getPublicTopics} from '../utils/topic';
 import PostEditor from '../components/PostEditor/index.vue';
@@ -115,7 +121,7 @@ function openPreview(slug) {
  */
 async function copyId(id) {
    try {
-      await navigator.clipboard.writeText(id);
+      await ClipboardSetText(id);
       copySuccessSnackbar.value = true;
    } catch (error) {
       copyErrorSnackbar.value = true;
