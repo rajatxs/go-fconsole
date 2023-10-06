@@ -219,7 +219,6 @@ onMounted(async function () {
             <v-btn-toggle
                v-model="scope"
                color="primary-darken-1"
-               rounded="lg"
                mandatory
                group>
                <v-btn value="public">
