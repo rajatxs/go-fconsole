@@ -31,3 +31,11 @@ func CloudinaryId() string {
 func CloudinaryURL() string {
 	return os.Getenv("CLOUDINARY_URL")
 }
+
+func AlgoliaAppId() string {
+	return os.Getenv("FMC_ALGOLIA_APP_ID")
+}
+
+func AlgoliaApiKey() string {
+	return os.Getenv("FM_ALGOLIA_API_KEY")
+}
