@@ -10,12 +10,6 @@ type GetPostsMetadataOptions struct {
 	Skip    int64  `json:"skip"`
 }
 
-type PostImageFile struct {
-	PublicId string `json:"publicId"`
-	AssetId  string `json:"assetId"`
-	Format   string `json:"format"`
-}
-
 type CreatePostPayload struct {
 	Title             string   `json:"title"`
 	Slug              string   `json:"slug"`

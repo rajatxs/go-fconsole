@@ -17,3 +17,9 @@ type AppVersions struct {
 	Username string `json:"uname"`
 	HomeDir  string `json:"homedir"`
 }
+
+type UploadedImageFile struct {
+	PublicId string `json:"publicId"`
+	AssetId  string `json:"assetId"`
+	Format   string `json:"format"`
+}
