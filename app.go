@@ -10,6 +10,7 @@ import (
 	"github.com/rajatxs/go-fconsole/config"
 	"github.com/rajatxs/go-fconsole/db"
 	"github.com/rajatxs/go-fconsole/types"
+	"github.com/rajatxs/go-fconsole/util"
 	wails_runtime "github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
@@ -26,12 +27,11 @@ func NewApp() *App {
 // startup is called when the app starts. The context is saved
 // so we can call the runtime methods
 func (a *App) startup(ctx context.Context) {
-	var err error
-
 	a.ctx = ctx
-	if err = db.ConnectMongoDb(ctx); err != nil {
-		log.Fatal(err)
-	}
+
+	util.Attempt(db.ConnectMongoDb(ctx))
+	util.Attempt(util.InitCloudinary())
+	util.InitAlgolia()
 }
 
 // terminate is called when the app shutdown.
