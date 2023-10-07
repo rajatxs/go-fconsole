@@ -3,6 +3,7 @@ module github.com/rajatxs/go-fconsole
 go 1.18
 
 require (
+	github.com/algolia/algoliasearch-client-go/v3 v3.31.0
 	github.com/cloudinary/cloudinary-go/v2 v2.5.1
 	github.com/wailsapp/wails/v2 v2.6.0
 	go.mongodb.org/mongo-driver v1.12.1
