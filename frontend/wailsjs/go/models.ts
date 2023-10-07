@@ -299,22 +299,6 @@ export namespace types {
 	        this.skip = source["skip"];
 	    }
 	}
-	export class PostImageFile {
-	    publicId: string;
-	    assetId: string;
-	    format: string;
-	
-	    static createFrom(source: any = {}) {
-	        return new PostImageFile(source);
-	    }
-	
-	    constructor(source: any = {}) {
-	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.publicId = source["publicId"];
-	        this.assetId = source["assetId"];
-	        this.format = source["format"];
-	    }
-	}
 	export class UpdatePostPayload {
 	    title: string;
 	    slug: string;
@@ -345,6 +329,22 @@ export namespace types {
 	        this.coverImagePath = source["coverImagePath"];
 	        this.coverImageRefName = source["coverImageRefName"];
 	        this.coverImageRefUrl = source["coverImageRefUrl"];
+	    }
+	}
+	export class UploadedImageFile {
+	    publicId: string;
+	    assetId: string;
+	    format: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new UploadedImageFile(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.publicId = source["publicId"];
+	        this.assetId = source["assetId"];
+	        this.format = source["format"];
 	    }
 	}
 

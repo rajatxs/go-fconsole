@@ -45,7 +45,3 @@ export function UploadPostCoverImage(arg1) {
 export function UploadPostEmbedImage(arg1) {
   return window['go']['services']['PostService']['UploadPostEmbedImage'](arg1);
 }
-
-export function UploadPostImage(arg1, arg2) {
-  return window['go']['services']['PostService']['UploadPostImage'](arg1, arg2);
-}

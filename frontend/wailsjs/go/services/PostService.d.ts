@@ -23,8 +23,6 @@ export function UpdatePostById(arg1:string,arg2:types.UpdatePostPayload):Promise
 
 export function UpdatePostScope(arg1:string,arg2:string):Promise<void>;
 
-export function UploadPostCoverImage(arg1:Array<number>):Promise<types.PostImageFile>;
+export function UploadPostCoverImage(arg1:Array<number>):Promise<types.UploadedImageFile>;
 
-export function UploadPostEmbedImage(arg1:Array<number>):Promise<types.PostImageFile>;
-
-export function UploadPostImage(arg1:string,arg2:Array<number>):Promise<types.PostImageFile>;
+export function UploadPostEmbedImage(arg1:Array<number>):Promise<types.UploadedImageFile>;
