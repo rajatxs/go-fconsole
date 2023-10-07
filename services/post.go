@@ -1,17 +1,15 @@
 package services
 
 import (
-	"bytes"
 	"context"
-	"fmt"
 	"log"
 	"time"
 
 	"github.com/cloudinary/cloudinary-go/v2/api/admin"
-	"github.com/cloudinary/cloudinary-go/v2/api/uploader"
 	"github.com/rajatxs/go-fconsole/db"
 	"github.com/rajatxs/go-fconsole/models"
 	"github.com/rajatxs/go-fconsole/types"
+	"github.com/rajatxs/go-fconsole/util"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -298,42 +296,19 @@ func (ps *PostService) SetPostDeleteFlag(rawid string, value bool) error {
 	return err
 }
 
-// UploadPostImage uploads post related image and returns uploaded file response
-func (ps *PostService) UploadPostImage(folderName string, imageData []byte) (res *types.PostImageFile, err error) {
-	var (
-		uploadResult *uploader.UploadResult
-		file         = bytes.NewReader(imageData)
-		params       = uploader.UploadParams{
-			ResourceType: "image",
-			Folder:       fmt.Sprintf("fivemin-prod/%s", folderName),
-		}
-	)
-
-	if uploadResult, err = CloudinaryInstance().Upload.Upload(ps.Ctx, file, params); err != nil {
-		return nil, err
-	} else {
-		res = &types.PostImageFile{
-			PublicId: uploadResult.PublicID,
-			AssetId:  uploadResult.AssetID,
-			Format:   uploadResult.Format,
-		}
-		return res, nil
-	}
-}
-
 // UploadPostCoverImage uploads cover image and returns uploaded file response
-func (ps *PostService) UploadPostCoverImage(imageData []byte) (res *types.PostImageFile, err error) {
-	return ps.UploadPostImage("post-cover-images", imageData)
+func (ps *PostService) UploadPostCoverImage(imageData []byte) (res *types.UploadedImageFile, err error) {
+	return util.UploadImage(ps.Ctx, "fivemin-prod/post-cover-images", imageData)
 }
 
 // UploadPostEmbedImage uploads post embedded image and returns uploaded file response
-func (ps *PostService) UploadPostEmbedImage(imageData []byte) (res *types.PostImageFile, err error) {
-	return ps.UploadPostImage("post-images", imageData)
+func (ps *PostService) UploadPostEmbedImage(imageData []byte) (res *types.UploadedImageFile, err error) {
+	return util.UploadImage(ps.Ctx, "fivemin-prod/post-images", imageData)
 }
 
 // DeletePostImage removes post related image from storage bucket
 func (ps *PostService) DeletePostImage(publicId string) (res *admin.DeleteAssetsResult, err error) {
-	return CloudinaryInstance().Admin.DeleteAssets(ps.Ctx, admin.DeleteAssetsParams{
+	return util.CloudinaryInstance().Admin.DeleteAssets(ps.Ctx, admin.DeleteAssetsParams{
 		PublicIDs: []string{publicId},
 	})
 }
