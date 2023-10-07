@@ -3,9 +3,9 @@ package main
 import (
 	"context"
 	"embed"
-	"log"
 
 	"github.com/rajatxs/go-fconsole/services"
+	"github.com/rajatxs/go-fconsole/util"
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
@@ -38,14 +38,8 @@ func runApp() error {
 			Assets: assets,
 		},
 		OnStartup: func(ctx context.Context) {
-			var err error
-
 			app.startup(ctx)
 			postService.Ctx = ctx
-
-			if err = services.InitCloudinary(); err != nil {
-				log.Println(err)
-			}
 		},
 		OnShutdown: app.terminate,
 		Bind: []interface{}{
@@ -63,9 +57,5 @@ func runApp() error {
 }
 
 func main() {
-	var err error
-
-	if err = runApp(); err != nil {
-		log.Fatal(err)
-	}
+	util.Attempt(runApp())
 }
