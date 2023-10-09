@@ -21,6 +21,7 @@ func runApp() error {
 
 	// Create service instances
 	postService := services.NewPostService()
+	topicService := services.NewTopicService()
 
 	// Create application with options
 	// TODO: Add `backgroundColor` property
@@ -40,11 +41,13 @@ func runApp() error {
 		OnStartup: func(ctx context.Context) {
 			app.startup(ctx)
 			postService.Ctx = ctx
+			postService.TopicServiceRef = topicService
 		},
 		OnShutdown: app.terminate,
 		Bind: []interface{}{
 			app,
 			postService,
+			topicService,
 		},
 		Windows: &windows.Options{
 			WebviewIsTransparent: false,

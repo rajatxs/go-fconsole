@@ -299,6 +299,24 @@ export namespace types {
 	        this.skip = source["skip"];
 	    }
 	}
+	export class Topic {
+	    name: string;
+	    thumbId: string;
+	    thumbPath: string;
+	    public: boolean;
+	
+	    static createFrom(source: any = {}) {
+	        return new Topic(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.name = source["name"];
+	        this.thumbId = source["thumbId"];
+	        this.thumbPath = source["thumbPath"];
+	        this.public = source["public"];
+	    }
+	}
 	export class UpdatePostPayload {
 	    title: string;
 	    slug: string;
