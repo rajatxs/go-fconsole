@@ -20,7 +20,8 @@ import (
 )
 
 type PostService struct {
-	Ctx context.Context
+	Ctx             context.Context
+	TopicServiceRef *TopicService
 }
 
 // NewPostService creates new instance of PostService
@@ -49,7 +50,7 @@ func (ps *PostService) saveIndex(id primitive.ObjectID) (res search.SaveObjectRe
 	record = &models.PostIndex{
 		ObjectId:  id.Hex(),
 		Name:      metadata.Title,
-		Topic:     GetTopicNameById(metadata.Topic),
+		Topic:     ps.TopicServiceRef.GetTopicNameById(metadata.Topic),
 		Desc:      metadata.Desc,
 		Tags:      metadata.Tags,
 		Url:       fmt.Sprintf("%s/%s", config.ClientUrl(), metadata.Slug),
