@@ -47,3 +47,15 @@ type PostDocument struct {
 	CreatedAt  time.Time          `bson:"createdAt" json:"createdAt"`
 	UpdatedAt  time.Time          `bson:"updatedAt" json:"updatedAt"`
 }
+
+type PostIndex struct {
+	ObjectId  string    `json:"objectID"`
+	Name      string    `json:"name"`
+	Topic     string    `json:"topic"`
+	Desc      string    `json:"description"`
+	Tags      []string  `json:"tags"`
+	Url       string    `json:"url"`
+	Image     string    `json:"image"`
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
+}
