@@ -12,6 +12,10 @@ func Env() string {
 	}
 }
 
+func IsProd() bool {
+	return Env() == "prod"
+}
+
 func MongoDbConnectionUrl() string {
 	return os.Getenv("FMC_MONGODB_CONN_URL")
 }
@@ -37,5 +41,9 @@ func AlgoliaAppId() string {
 }
 
 func AlgoliaApiKey() string {
-	return os.Getenv("FM_ALGOLIA_API_KEY")
+	return os.Getenv("FMC_ALGOLIA_API_KEY")
+}
+
+func ClientUrl() string {
+	return os.Getenv("FMC_CLIENT_URL")
 }
