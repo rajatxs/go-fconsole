@@ -1,6 +1,14 @@
 package services
 
-import "github.com/rajatxs/go-fconsole/types"
+import (
+	"context"
+
+	"github.com/rajatxs/go-fconsole/types"
+)
+
+type TopicService struct {
+	Ctx context.Context
+}
 
 var topics types.Topics = map[string]types.Topic{
 	"lifestyle": {
@@ -107,13 +115,18 @@ var topics types.Topics = map[string]types.Topic{
 	},
 }
 
+// NewTopicService creates new instance of TopicService
+func NewTopicService() *TopicService {
+	return &TopicService{}
+}
+
 // GetAllTopics returns object of all available topics
-func GetAllTopics() *types.Topics {
+func (ts *TopicService) GetAllTopics() *types.Topics {
 	return &topics
 }
 
 // GetPublicTopics returns object of publicly available topics
-func GetPublicTopics() (pubtops types.Topics) {
+func (ts *TopicService) GetPublicTopics() (pubtops types.Topics) {
 	pubtops = make(map[string]types.Topic)
 
 	for topicId, topic := range topics {
@@ -126,7 +139,7 @@ func GetPublicTopics() (pubtops types.Topics) {
 }
 
 // GetPrivateTopics returns object of private topics
-func GetPrivateTopics() (pubtops types.Topics) {
+func (ts *TopicService) GetPrivateTopics() (pubtops types.Topics) {
 	pubtops = make(map[string]types.Topic)
 
 	for topicId, topic := range topics {
@@ -139,12 +152,12 @@ func GetPrivateTopics() (pubtops types.Topics) {
 }
 
 // GetTopicById returns single topic object by given id
-func GetTopicById(id string) types.Topic {
+func (ts *TopicService) GetTopicById(id string) types.Topic {
 	return topics[id]
 }
 
 // GetTopicNameById returns topic name of by given id
-func GetTopicNameById(id string) string {
+func (ts *TopicService) GetTopicNameById(id string) string {
 	if topic, ok := topics[id]; ok {
 		return topic.Name
 	} else {
