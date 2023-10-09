@@ -7,8 +7,8 @@ import {
    SetPostDeleteFlag
 } from '../../wailsjs/go/services/PostService';
 import { ClipboardSetText } from '../../wailsjs/go/main/App';
+import { GetPublicTopics } from '../../wailsjs/go/services/TopicService';
 import {groupArray, truncateText, getPostCoverImageURL} from '../utils';
-import {getTopicName, getPublicTopics} from '../utils/topic';
 import PostEditor from '../components/PostEditor/index.vue';
 import Loader from '../components/Loader.vue';
 
@@ -60,9 +60,9 @@ const sortOptions = ref([
    },
 ]);
 
-function renderTopicFilter() {
+async function renderTopicFilter() {
    /** @type {any} */
-   const _topics = getPublicTopics();
+   const _topics = await GetPublicTopics();
 
    const options = [
       {
@@ -71,10 +71,10 @@ function renderTopicFilter() {
       },
    ];
 
-   for (const _topic of _topics) {
+   for (const _topicId in _topics) {
       options.push({
-         title: _topic.name,
-         value: _topic.id,
+         title: _topics[_topicId].name,
+         value: _topicId,
       });
    }
 
@@ -105,6 +105,19 @@ async function fetchPosts() {
       fetchErrorSnackbar.value = true;
    }
    loading.value = false;
+}
+
+/**
+ * Returns name of the topic from topicOptions array
+ * @param {string} id 
+ */
+function getTopicName(id) {
+   let record = topicOptions.value.find(rec => rec.value === id);
+   if (record) {
+      return record.title;
+   } else {
+      return "Other";
+   }
 }
 
 /**
@@ -202,7 +215,7 @@ watch(deletePostId, function(newPostId) {
 });
 
 onMounted(async function () {
-   renderTopicFilter();
+   await renderTopicFilter();
    await fetchPosts();
 });
 </script>

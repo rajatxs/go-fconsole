@@ -77,7 +77,7 @@ function close() {
 
 /** @param {File} file */
 async function uploadByFile(file) {
-   /** @type {import('../../../wailsjs/go/models').types.PostImageFile} */
+   /** @type {import('../../../wailsjs/go/models').types.UploadedImageFile} */
    let result;
 
    if (!file) {

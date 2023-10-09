@@ -1,8 +1,8 @@
 <script setup>
 import {ref, computed, onMounted} from 'vue';
 import {state} from './store.js';
-import {getPublicTopics} from '../../utils/topic';
 import {UploadPostCoverImage, DeletePostImage} from '../../../wailsjs/go/services/PostService';
+import {GetPublicTopics} from '../../../wailsjs/go/services/TopicService';
 import {getFileByteArray, getPostCoverImageURL, computeSlug} from '../../utils';
 
 /** @type {import('vue').Ref<boolean>} */
@@ -28,20 +28,22 @@ const coverImageUrl = computed(function () {
    return getPostCoverImageURL(state.coverImagePublicId);
 });
 
-onMounted(function () {
-   renderTopics();
+onMounted(async function () {
+   await renderTopics();
 });
 
-function renderTopics() {
-   /** @type {any[]} */
-   const _topics = getPublicTopics();
+async function renderTopics() {
+   const _topics = await GetPublicTopics();
+   const options = [];
 
-   topics.value = _topics.map((_topic) => {
-      return {
-         title: _topic.name,
-         value: _topic.id,
-      };
-   });
+   for (const _topicId in _topics) {
+      options.push({
+         title: _topics[_topicId].name,
+         value: _topicId,
+      });
+   }
+
+   topics.value = options;
 }
 
 /** @param {any} event  */
@@ -61,7 +63,7 @@ async function onCoverImageUpload(event) {
    /** @type {number[]} */
    let byteArray = [];
 
-   /** @type {import('../../../wailsjs/go/models').types.PostImageFile} */
+   /** @type {import('../../../wailsjs/go/models').types.UploadedImageFile} */
    let result;
 
    if (!file) {

@@ -1,7 +1,7 @@
 <script setup>
 import { onMounted, ref, watch } from 'vue';
 import { groupArray, getPostTopicImageUrl } from '../utils';
-import { getPublicTopics, getPrivateTopics } from '../utils/topic';
+import { GetPublicTopics, GetPrivateTopics } from '../../wailsjs/go/services/TopicService';
 import Loader from '../components/Loader.vue';
 
 /** @type {import('vue').Ref<any[][]>} */
@@ -44,10 +44,17 @@ async function fetchTopics() {
       let _topics;
 
       if (scope.value === "public") {
-         _topics = getPublicTopics();
+         _topics = await GetPublicTopics();
       } else {
-         _topics = getPrivateTopics();
+         _topics = await GetPrivateTopics();
       }
+
+      _topics = Object.entries(_topics)
+         .map(function (_topic) {
+            Reflect.set(_topic[1], 'id', _topic[0]);
+            return _topic[1];
+         })
+         .sort((a, b) => a.name.localeCompare(b.name));
 
       topicGroups.value = groupArray(_topics);
    } catch (error) {
