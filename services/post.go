@@ -2,10 +2,13 @@ package services
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"time"
 
+	"github.com/algolia/algoliasearch-client-go/v3/algolia/search"
 	"github.com/cloudinary/cloudinary-go/v2/api/admin"
+	"github.com/rajatxs/go-fconsole/config"
 	"github.com/rajatxs/go-fconsole/db"
 	"github.com/rajatxs/go-fconsole/models"
 	"github.com/rajatxs/go-fconsole/types"
@@ -24,6 +27,71 @@ type PostService struct {
 func NewPostService() *PostService {
 	return &PostService{
 		Ctx: nil,
+	}
+}
+
+// saveIndex writes new object to post search index
+func (ps *PostService) saveIndex(id primitive.ObjectID) (res search.SaveObjectRes, err error) {
+	var (
+		metadata *models.PostMetadataDocument
+		record   *models.PostIndex
+		nilRes   = search.SaveObjectRes{}
+	)
+
+	if err = db.
+		MongoDb().
+		Collection("publicPostsMetadata").
+		FindOne(ps.Ctx, &primitive.D{{Key: "_id", Value: id}}).
+		Decode(&metadata); err != nil {
+		return nilRes, err
+	}
+
+	record = &models.PostIndex{
+		ObjectId:  id.Hex(),
+		Name:      metadata.Title,
+		Topic:     GetTopicNameById(metadata.Topic),
+		Desc:      metadata.Desc,
+		Tags:      metadata.Tags,
+		Url:       fmt.Sprintf("%s/%s", config.ClientUrl(), metadata.Slug),
+		Image:     util.GetPostCoverImageUrl(metadata.CoverImage.Path),
+		CreatedAt: metadata.CreatedAt,
+		UpdatedAt: metadata.UpdatedAt,
+	}
+
+	if res, err = util.PostIndex().SaveObject(record); err != nil {
+		log.Println("failed to save index", err)
+		return nilRes, err
+	} else {
+		log.Println("saved post index", id)
+		return res, nil
+	}
+}
+
+// dropIndex removes object from post search index
+func (ps *PostService) dropIndex(id primitive.ObjectID) (res search.DeleteTaskRes, err error) {
+	if res, err = util.PostIndex().DeleteObject(id.Hex()); err != nil {
+		log.Println("failed to drop index", err)
+		return search.DeleteTaskRes{}, err
+	} else {
+		log.Println("dropped post index", id)
+		return res, nil
+	}
+}
+
+// updateIndex handles update/delete operation in post search index
+func (ps *PostService) updateIndex(id primitive.ObjectID, public bool) (err error) {
+	if config.IsProd() {
+		if public {
+			// add object to search index
+			_, err = ps.saveIndex(id)
+		} else {
+			// remove object from search index
+			_, err = ps.dropIndex(id)
+		}
+
+		return err
+	} else {
+		return nil
 	}
 }
 
@@ -185,6 +253,7 @@ func (ps *PostService) GetPostCount(scope string, includeDeleted bool) (int64, e
 func (ps *PostService) CreatePost(payload *types.CreatePostPayload) (*mongo.InsertOneResult, error) {
 	var (
 		authorId primitive.ObjectID
+		res      *mongo.InsertOneResult
 		err      error
 	)
 
@@ -215,7 +284,19 @@ func (ps *PostService) CreatePost(payload *types.CreatePostPayload) (*mongo.Inse
 		"updatedAt": time.Now(),
 	}
 
-	return db.MongoDb().Collection("posts").InsertOne(ps.Ctx, newPost)
+	if res, err = db.MongoDb().Collection("posts").InsertOne(ps.Ctx, newPost); err != nil {
+		log.Println("failed to insert new post document", err)
+		return nil, err
+	} else {
+		log.Println("inserted post document", res.InsertedID)
+	}
+
+	// add object to search index
+	if err = ps.updateIndex(res.InsertedID.(primitive.ObjectID), payload.Public); err != nil {
+		return nil, err
+	}
+
+	return res, nil
 }
 
 // UpdatePostById updates existing post document by given rawid
@@ -224,6 +305,7 @@ func (ps *PostService) UpdatePostById(rawid string, payload types.UpdatePostPayl
 		oid    primitive.ObjectID
 		filter bson.D
 		update bson.D
+		res    *mongo.UpdateResult
 		err    error
 	)
 
@@ -250,7 +332,20 @@ func (ps *PostService) UpdatePostById(rawid string, payload types.UpdatePostPayl
 		}
 	}
 
-	return db.MongoDb().Collection("posts").UpdateOne(ps.Ctx, filter, update)
+	// update document
+	if res, err = db.MongoDb().Collection("posts").UpdateOne(ps.Ctx, filter, update); err != nil {
+		log.Println("failed to update post document", err)
+		return nil, err
+	} else {
+		log.Println("updated post document", oid)
+	}
+
+	// update search index
+	if err = ps.updateIndex(oid, payload.Public); err != nil {
+		return nil, err
+	}
+
+	return res, nil
 }
 
 // UpdatePostScope set specified scope of post
@@ -270,9 +365,16 @@ func (ps *PostService) UpdatePostScope(rawid string, scope string) error {
 		update = bson.M{"$set": bson.M{"public": public}}
 	}
 
-	// Update scope
-	_, err = db.MongoDb().Collection("posts").UpdateOne(ps.Ctx, filter, update)
-	return err
+	// update scope
+	if _, err = db.MongoDb().Collection("posts").UpdateOne(ps.Ctx, filter, update); err != nil {
+		log.Println("failed to update post scope", err)
+		return err
+	} else {
+		log.Println("updated post scope", oid)
+	}
+
+	// update search index
+	return ps.updateIndex(oid, public)
 }
 
 // SetPostDeleteFlag sets post delete flag by given post rawid
@@ -291,9 +393,16 @@ func (ps *PostService) SetPostDeleteFlag(rawid string, value bool) error {
 		update = bson.M{"$set": bson.M{"deleted": value}}
 	}
 
-	// Update document
-	_, err = db.MongoDb().Collection("posts").UpdateOne(ps.Ctx, filter, update)
-	return err
+	// update document
+	if _, err = db.MongoDb().Collection("posts").UpdateOne(ps.Ctx, filter, update); err != nil {
+		log.Println("failed to update post delete flag", err)
+		return err
+	} else {
+		log.Println("updated post delete flag", oid)
+	}
+
+	// update search index
+	return ps.updateIndex(oid, !value)
 }
 
 // UploadPostCoverImage uploads cover image and returns uploaded file response
