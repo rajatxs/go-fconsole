@@ -3,8 +3,10 @@ package util
 import (
 	"bytes"
 	"context"
+	"fmt"
 
 	"github.com/cloudinary/cloudinary-go/v2"
+	"github.com/cloudinary/cloudinary-go/v2/api/admin"
 	"github.com/cloudinary/cloudinary-go/v2/api/uploader"
 	"github.com/rajatxs/go-fconsole/types"
 )
@@ -37,7 +39,10 @@ func UploadImage(ctx context.Context, folderName string, imageData []byte) (res 
 		}
 	)
 
+	Log.Info(fmt.Sprintf("[util.UploadImage] Uploading image (folder='%s')", folderName))
+
 	if uploadResult, err = CloudinaryInstance().Upload.Upload(ctx, file, params); err != nil {
+		Log.Error(fmt.Sprintf("[util.UploadImage] %s", err.Error()))
 		return nil, err
 	} else {
 		res = &types.UploadedImageFile{
@@ -45,6 +50,25 @@ func UploadImage(ctx context.Context, folderName string, imageData []byte) (res 
 			AssetId:  uploadResult.AssetID,
 			Format:   uploadResult.Format,
 		}
+		Log.Info(fmt.Sprintf(
+			"[util.UploadImage] Image uploaded (format='%s', publicId='%s', assetId='%s')",
+			res.Format,
+			res.PublicId,
+			res.AssetId))
+
 		return res, nil
 	}
+}
+
+// DeleteImage removes image from storage bucket
+func DeleteImage(ctx context.Context, publicId string) (err error) {
+	if _, err = CloudinaryInstance().Admin.DeleteAssets(ctx, admin.DeleteAssetsParams{
+		PublicIDs: []string{publicId},
+	}); err != nil {
+		Log.Error(fmt.Sprintf("[util.DeleteImage] %s", err.Error()))
+	} else {
+		Log.Info(fmt.Sprintf("[util.DeleteImage] Image deleted (publicId='%s')", publicId))
+	}
+
+	return err
 }

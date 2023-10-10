@@ -30,8 +30,13 @@ func (a *App) startup(ctx context.Context) {
 	a.ctx = ctx
 
 	util.Attempt(db.ConnectMongoDb(ctx))
+	util.Log.Info("[App] Connected to MongoDB")
+
 	util.Attempt(util.InitCloudinary())
+	util.Log.Info("[App] Cloudinary initiated")
+
 	util.InitAlgolia()
+	util.Log.Info("[App] Algolia initiated")
 }
 
 // terminate is called when the app shutdown.
@@ -39,7 +44,9 @@ func (a *App) terminate(ctx context.Context) {
 	var err error
 
 	if err = db.DisconnectMongoDb(ctx); err != nil {
-		log.Println(err)
+		util.Log.Error(err.Error())
+	} else {
+		util.Log.Info("[App] MongoDB disconnected")
 	}
 }
 

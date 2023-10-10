@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/algolia/algoliasearch-client-go/v3/algolia/search"
-	"github.com/cloudinary/cloudinary-go/v2/api/admin"
 	"github.com/rajatxs/go-fconsole/config"
 	"github.com/rajatxs/go-fconsole/db"
 	"github.com/rajatxs/go-fconsole/models"
@@ -60,10 +59,10 @@ func (ps *PostService) saveIndex(id primitive.ObjectID) (res search.SaveObjectRe
 	}
 
 	if res, err = util.PostIndex().SaveObject(record); err != nil {
-		log.Println("failed to save index", err)
+		util.Log.Error(fmt.Sprintf("[PostService.saveIndex] %s", err.Error()))
 		return nilRes, err
 	} else {
-		log.Println("saved post index", id)
+		util.Log.Info(fmt.Sprintf("[PostService.saveIndex] Saved post index (id='%s')", id.Hex()))
 		return res, nil
 	}
 }
@@ -71,10 +70,10 @@ func (ps *PostService) saveIndex(id primitive.ObjectID) (res search.SaveObjectRe
 // dropIndex removes object from post search index
 func (ps *PostService) dropIndex(id primitive.ObjectID) (res search.DeleteTaskRes, err error) {
 	if res, err = util.PostIndex().DeleteObject(id.Hex()); err != nil {
-		log.Println("failed to drop index", err)
+		util.Log.Error(fmt.Sprintf("[PostService.dropIndex] %s", err.Error()))
 		return search.DeleteTaskRes{}, err
 	} else {
-		log.Println("dropped post index", id)
+		util.Log.Info(fmt.Sprintf("[PostService.saveIndex] Dropped post index (id='%s')", id.Hex()))
 		return res, nil
 	}
 }
@@ -286,10 +285,10 @@ func (ps *PostService) CreatePost(payload *types.CreatePostPayload) (*mongo.Inse
 	}
 
 	if res, err = db.MongoDb().Collection("posts").InsertOne(ps.Ctx, newPost); err != nil {
-		log.Println("failed to insert new post document", err)
+		util.Log.Error(fmt.Sprintf("[PostService.CreatePost] %s", err.Error()))
 		return nil, err
 	} else {
-		log.Println("inserted post document", res.InsertedID)
+		util.Log.Info(fmt.Sprintf("[PostService.CreatePost] Inserted post document (id='%s')", res.InsertedID.(primitive.ObjectID).Hex()))
 	}
 
 	// add object to search index
@@ -335,10 +334,10 @@ func (ps *PostService) UpdatePostById(rawid string, payload types.UpdatePostPayl
 
 	// update document
 	if res, err = db.MongoDb().Collection("posts").UpdateOne(ps.Ctx, filter, update); err != nil {
-		log.Println("failed to update post document", err)
+		util.Log.Error(fmt.Sprintf("[PostService.UpdatePostById] %s", err.Error()))
 		return nil, err
 	} else {
-		log.Println("updated post document", oid)
+		util.Log.Info(fmt.Sprintf("[PostService.UpdatePostById] Updated post document (id='%s')", oid.Hex()))
 	}
 
 	// update search index
@@ -368,10 +367,10 @@ func (ps *PostService) UpdatePostScope(rawid string, scope string) error {
 
 	// update scope
 	if _, err = db.MongoDb().Collection("posts").UpdateOne(ps.Ctx, filter, update); err != nil {
-		log.Println("failed to update post scope", err)
+		util.Log.Error(fmt.Sprintf("[PostService.UpdatePostScope] %s", err.Error()))
 		return err
 	} else {
-		log.Println("updated post scope", oid)
+		util.Log.Info(fmt.Sprintf("[PostService.UpdatePostScope] Updated post scope (id='%s', scope='%s')", oid.Hex(), scope))
 	}
 
 	// update search index
@@ -396,10 +395,10 @@ func (ps *PostService) SetPostDeleteFlag(rawid string, value bool) error {
 
 	// update document
 	if _, err = db.MongoDb().Collection("posts").UpdateOne(ps.Ctx, filter, update); err != nil {
-		log.Println("failed to update post delete flag", err)
+		util.Log.Error(fmt.Sprintf("[PostService.SetPostDeleteFlag] %s", err.Error()))
 		return err
 	} else {
-		log.Println("updated post delete flag", oid)
+		util.Log.Info(fmt.Sprintf("[PostService.SetPostDeleteFlag] Updated post delete flag (id='%s', value=%t)", oid.Hex(), value))
 	}
 
 	// update search index
@@ -417,8 +416,6 @@ func (ps *PostService) UploadPostEmbedImage(imageData []byte) (res *types.Upload
 }
 
 // DeletePostImage removes post related image from storage bucket
-func (ps *PostService) DeletePostImage(publicId string) (res *admin.DeleteAssetsResult, err error) {
-	return util.CloudinaryInstance().Admin.DeleteAssets(ps.Ctx, admin.DeleteAssetsParams{
-		PublicIDs: []string{publicId},
-	})
+func (ps *PostService) DeletePostImage(publicId string) error {
+	return util.DeleteImage(ps.Ctx, publicId)
 }
