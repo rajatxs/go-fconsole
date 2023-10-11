@@ -86,8 +86,8 @@ func (a *App) GetVersions() (ver *types.AppVersions) {
 		log.Println(err)
 	}
 
-	ver.App = "0.0.1"
-	ver.Date = "2023-09-20T07:53:14.501Z"
+	ver.App = "0.1"
+	ver.Date = "2023-10-11T17:33:25.446Z"
 	ver.Wails = "2.6.0"
 	ver.Go = "1.20.3"
 	ver.WebView2 = "111.0.2045.32"
