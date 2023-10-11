@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"os/exec"
 	"os/user"
@@ -44,7 +45,7 @@ func (a *App) terminate(ctx context.Context) {
 	var err error
 
 	if err = db.DisconnectMongoDb(ctx); err != nil {
-		util.Log.Error(err.Error())
+		util.Log.Error(fmt.Sprintf("[App] %s", err.Error()))
 	} else {
 		util.Log.Info("[App] MongoDB disconnected")
 	}
