@@ -2,13 +2,17 @@ package main
 
 import (
 	"context"
+	"fmt"
+	"log"
+	"os/exec"
+	"os/user"
+	"runtime"
 
-	"github.com/labstack/gommon/log"
 	"github.com/rajatxs/go-fconsole/config"
 	"github.com/rajatxs/go-fconsole/db"
-	"github.com/rajatxs/go-fconsole/models"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo/options"
+	"github.com/rajatxs/go-fconsole/types"
+	"github.com/rajatxs/go-fconsole/util"
+	wails_runtime "github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
 // App struct
@@ -25,73 +29,76 @@ func NewApp() *App {
 // so we can call the runtime methods
 func (a *App) startup(ctx context.Context) {
 	a.ctx = ctx
+
+	util.Attempt(db.ConnectMongoDb(ctx))
+	util.Log.Info("[App] Connected to MongoDB")
+
+	util.Attempt(util.InitCloudinary())
+	util.Log.Info("[App] Cloudinary initiated")
+
+	util.InitAlgolia()
+	util.Log.Info("[App] Algolia initiated")
 }
 
-func (a *App) GetAppConfigVariables() map[string]string {
-	var env = map[string]string{}
+// terminate is called when the app shutdown.
+func (a *App) terminate(ctx context.Context) {
+	var err error
 
-	env["ENV"] = config.Env()
-	env["ADMIN_ID"] = config.AdminId()
-	env["CLOUDINARY_ID"] = config.CloudinaryId()
+	if err = db.DisconnectMongoDb(ctx); err != nil {
+		util.Log.Error(fmt.Sprintf("[App] %s", err.Error()))
+	} else {
+		util.Log.Info("[App] MongoDB disconnected")
+	}
+}
+
+// OpenBrowser opens given url into default browser
+func (a *App) OpenBrowser(url string) error {
+	var cmd *exec.Cmd
+
+	switch runtime.GOOS {
+	case "windows":
+		cmd = exec.Command("cmd", "/c", "start", url)
+	case "darwin":
+		cmd = exec.Command("open", url)
+	default:
+		cmd = exec.Command("xdg-open", url)
+	}
+
+	return cmd.Start()
+}
+
+// GetAppConfigVariables returns public app config variables
+func (a *App) GetAppConfigVariables() (env *types.AppPublicConfigVariables) {
+	env = &types.AppPublicConfigVariables{}
+
+	env.ENV = config.Env()
+	env.ADMIN_ID = config.AdminId()
+	env.CLOUDINARY_ID = config.CloudinaryId()
 	return env
 }
 
-func (a *App) GetPostsMetadata(scope string, sortBy string, limit int64, skip int64) ([]models.PostMetadataDocument, error) {
-	var posts []models.PostMetadataDocument
-	var collName string
+// GetVersions returns app version information
+func (a *App) GetVersions() (ver *types.AppVersions) {
+	ver = &types.AppVersions{}
 
-	opts := options.Find()
-
-	if scope == "public" {
-		collName = "publicPostsMetadata"
-	} else {
-		collName = "privatePostsMetadata"
+	currentUser, err := user.Current()
+	if err != nil {
+		log.Println(err)
 	}
 
-	switch sortBy {
-	case "title":
-		opts.SetSort(map[string]int{"title": 1})
-
-	case "topic":
-		opts.SetSort(map[string]int{"topic": 1})
-
-	case "newest":
-		opts.SetSort(map[string]int{"createdAt": -1})
-
-	case "oldest":
-		opts.SetSort(map[string]int{"createdAt": 1})
-
-	case "updated":
-		opts.SetSort(map[string]int{"updatedAt": -1})
-	}
-
-	opts.SetLimit(limit)
-	opts.SetSkip(skip)
-
-	if cur, err := db.MongoDb().Collection(collName).Find(a.ctx, bson.D{}, nil, opts); err != nil {
-		log.Error(err)
-	} else {
-		defer cur.Close(a.ctx)
-
-		for cur.Next(a.ctx) {
-			var post models.PostMetadataDocument
-
-			if err = cur.Decode(&post); err != nil {
-				return nil, err
-			}
-			posts = append(posts, post)
-		}
-
-		if err = cur.Err(); err != nil {
-			return nil, err
-		}
-	}
-
-	return posts, nil
+	ver.App = "0.0.1"
+	ver.Date = "2023-09-20T07:53:14.501Z"
+	ver.Wails = "2.6.0"
+	ver.Go = "1.20.3"
+	ver.WebView2 = "111.0.2045.32"
+	ver.Os = runtime.GOOS
+	ver.Arch = runtime.GOARCH
+	ver.Username = currentUser.Name
+	ver.HomeDir = currentUser.HomeDir
+	return ver
 }
 
-func (a *App) GetPostCount(scope string, includeDeleted bool) (int64, error) {
-	return db.MongoDb().Collection("posts").CountDocuments(
-		a.ctx,
-		bson.D{{Key: "public", Value: scope == "public"}, {Key: "deleted", Value: includeDeleted}})
+// ClipboardSetText writes given text to clipboard
+func (a *App) ClipboardSetText(text string) error {
+	return wails_runtime.ClipboardSetText(a.ctx, text)
 }

@@ -4,4 +4,6 @@ frontend/dist
 
 .env
 dev.bat
+dev-run.bat
 prod.bat
+prod-run.bat
