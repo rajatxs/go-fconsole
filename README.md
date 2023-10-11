@@ -13,6 +13,11 @@ This project provides interface to manage content on the [Fivemin](https://www.f
 - [Wails 2.6.0](https://wails.io/docs/gettingstarted/installation)
 - [WebView2](https://developer.microsoft.com/en-us/microsoft-edge/webview2)
 
+#### Optional Dependencies
+
+- [UPX](https://upx.github.io) for compressing your applications.
+- [NSIS](https://nsis.sourceforge.io/Main_Page) for generating Windows installers.
+
 ## Installation
 
 1. Clone the repository:
