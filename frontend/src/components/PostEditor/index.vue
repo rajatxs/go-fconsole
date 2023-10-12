@@ -63,6 +63,10 @@ const allowToSubmit = computed(function () {
    return state.title.length && state.slug.length;
 });
 
+const toolbarColor = computed(function() {
+   return state.publicScope? 'primary': 'default';
+});
+
 function close() {
    if (action.value === 'update') {
       if (errorLoadData.value) {
@@ -275,7 +279,7 @@ watch(
       </template>
 
       <v-card>
-         <v-toolbar color="primary" class="app-custom-toolbar" dark>
+         <v-toolbar :color="toolbarColor" class="app-custom-toolbar" dark>
             <v-btn icon dark @click="close">
                <v-icon>mdi-close</v-icon>
             </v-btn>
