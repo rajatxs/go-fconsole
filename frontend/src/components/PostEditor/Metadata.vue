@@ -131,7 +131,25 @@ async function onCoverImageRemove() {
       <v-textarea v-model="state.desc" label="Description"></v-textarea>
 
       <!-- Tags input field -->
-      <v-combobox v-model="state.tags" label="Tags" multiple chips> </v-combobox>
+      <v-combobox v-model="state.tags" label="Tags" multiple chips></v-combobox>
+
+      <!-- Related post input field -->
+      <v-row>
+         <v-col cols="12">
+            <v-combobox
+               v-model="state.relatedPosts"
+               label="Related Posts"
+               multiple
+               chips
+               closable-chips>
+               <template v-slot:append>
+                  <v-btn prepend-icon="mdi-select-search">
+                     Select Post
+                  </v-btn>
+               </template>
+            </v-combobox>
+         </v-col>
+      </v-row>
 
       <v-row class="mb-2">
          <v-col cols="12" sm="6">
@@ -217,6 +235,7 @@ async function onCoverImageRemove() {
             </v-btn>
          </v-col>
       </v-row>
+
       <v-snackbar v-model="coverImageUploadSuccessSnackbar" :timeout="3000" color="primary">
          Cover Image Uploaded
       </v-snackbar>
