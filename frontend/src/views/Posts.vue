@@ -276,15 +276,11 @@ onMounted(async function () {
                   </v-img>
 
                   <v-card-item>
-                     <v-card-title>{{ post.title }}</v-card-title>
-
-                     <v-card-subtitle>
-                        <span class="me-1">{{ getTopicName(post.topic) }}</span>
-                     </v-card-subtitle>
+                     <v-card-title class="font-weight-medium">{{ post.title }}</v-card-title>
                   </v-card-item>
 
-                  <v-card-text>
-                     {{ truncateText(post.desc, 72) }}
+                  <v-card-text class="text-medium-emphasis">
+                     {{ truncateText(post.desc, 96) }}
                   </v-card-text>
 
                   <v-card-actions class="flex flex-row justify-space-between pl-3 pr-3">
