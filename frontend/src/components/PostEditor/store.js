@@ -33,6 +33,9 @@ export const state = reactive({
 
    /** @type {string} */
    coverImageAssetId: '',
+
+   /** @type {string[]} */
+   relatedPosts: [],
 });
 
 /**
@@ -47,6 +50,7 @@ export function setMetadata(data) {
    state.tags = data.tags;
    state.publicScope = data.public;
    state.body = data.body;
+   state.relatedPosts = data.related;
 
    if (data.coverImage) {
       state.coverImageRefName = data.coverImage.refName;
@@ -69,4 +73,5 @@ export function clearMetadata() {
    state.coverImageRefUrl = '';
    state.coverImagePublicId = '';
    state.coverImageAssetId = '';
+   state.relatedPosts = [];
 }
