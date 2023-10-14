@@ -132,9 +132,9 @@ func (ps *PostService) GetPostMetadataById(rawid string, private bool) (*models.
 }
 
 // GetPostById returns Post document by given Raw ID
-func (ps *PostService) GetPostById(rawid string) (*models.PostDocument, error) {
+func (ps *PostService) GetPostById(rawid string) (*models.PostObjectView, error) {
 	var (
-		doc    *models.PostDocument
+		doc    *models.PostObjectView
 		oid    primitive.ObjectID
 		filter primitive.D
 		err    error
@@ -150,7 +150,7 @@ func (ps *PostService) GetPostById(rawid string) (*models.PostDocument, error) {
 	// Find single post document by _id
 	if err = db.
 		MongoDb().
-		Collection("posts").
+		Collection("postsObject").
 		FindOne(ps.Ctx, filter).
 		Decode(&doc); err != nil {
 		return nil, err

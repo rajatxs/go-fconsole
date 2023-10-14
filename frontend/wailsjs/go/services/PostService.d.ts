@@ -8,7 +8,7 @@ export function CreatePost(arg1:types.CreatePostPayload):Promise<mongo.InsertOne
 
 export function DeletePostImage(arg1:string):Promise<void>;
 
-export function GetPostById(arg1:string):Promise<models.PostDocument>;
+export function GetPostById(arg1:string):Promise<models.PostObjectView>;
 
 export function GetPostCount(arg1:string,arg2:boolean):Promise<number>;
 
