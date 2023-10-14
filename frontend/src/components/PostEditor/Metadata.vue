@@ -1,6 +1,7 @@
 <script setup>
 import {ref, computed, onMounted} from 'vue';
 import {state} from './store.js';
+import PostSelector from '../PostSelector/index.vue';
 import {UploadPostCoverImage, DeletePostImage} from '../../../wailsjs/go/services/PostService';
 import {GetPublicTopics} from '../../../wailsjs/go/services/TopicService';
 import {getFileByteArray, getPostCoverImageURL, computeSlug} from '../../utils';
@@ -10,6 +11,9 @@ const loadingUploadImage = ref(false);
 
 /** @type {import('vue').Ref<boolean>} */
 const loadingRemoveImage = ref(false);
+
+/** @type {import('vue').Ref<boolean>} */
+const viewPostSelector = ref(false);
 
 /** @type {import('vue').Ref<boolean>} */
 const coverImageUploadSuccessSnackbar = ref(false);
@@ -26,6 +30,10 @@ const coverImageUploaded = computed(function () {
 
 const coverImageUrl = computed(function () {
    return getPostCoverImageURL(state.coverImagePublicId);
+});
+
+const relatedPostsIds = computed(function() {
+   return state.relatedPosts.map(p => p.value);
 });
 
 onMounted(async function () {
@@ -101,6 +109,18 @@ async function onCoverImageRemove() {
 
    loadingRemoveImage.value = false;
 }
+
+/**
+ * Inserts new post tag in related post input field
+ * @param {import('../../../wailsjs/go/models').models.PostMetadataDocument} post 
+ */
+function addRelatedPost(post) {
+   state.relatedPosts.push({
+      title: post.title,
+      value: post._id.toString(),
+   });
+   viewPostSelector.value = false;
+}
 </script>
 
 <template>
@@ -143,8 +163,10 @@ async function onCoverImageRemove() {
                chips
                closable-chips>
                <template v-slot:append>
-                  <v-btn prepend-icon="mdi-select-search">
-                     Select Post
+                  <v-btn 
+                     prepend-icon="mdi-select-search" 
+                     @click="viewPostSelector = true">
+                     Add Post
                   </v-btn>
                </template>
             </v-combobox>
@@ -243,4 +265,11 @@ async function onCoverImageRemove() {
          Couldn't upload Cover Image
       </v-snackbar>
    </v-card>
+
+   <PostSelector 
+      :visible="viewPostSelector" 
+      :topic="state.topic || undefined"
+      :selected="relatedPostsIds"
+      @select="addRelatedPost"
+      @close="viewPostSelector = false" />
 </template>
