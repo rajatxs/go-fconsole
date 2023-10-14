@@ -16,6 +16,10 @@ const props = defineProps({
       type: String,
       required: false,
    },
+   selected: {
+      type: Array,
+      default: [],
+   },
 });
 const emit = defineEmits(['close', 'select']);
 
@@ -85,7 +89,7 @@ function topicName(id) {
 
 async function fetchPostsMetadata() {
    try {
-      const _posts = await GetPostsMetadata({
+      let _posts = await GetPostsMetadata({
          private: false,
          topic: topic.value,
          sortBy: sort.value,
@@ -93,7 +97,12 @@ async function fetchPostsMetadata() {
          skip: 0,
       });
 
-      posts.value = _posts;
+      if (!_posts) {
+         _posts = [];
+      }
+
+      // skip selected posts
+      posts.value = _posts.filter(p => !props.selected.includes(p._id));
    } catch (error) {
       console.error(error);
       fetchPostError.value = true;
