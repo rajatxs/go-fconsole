@@ -1,6 +1,6 @@
 <script setup>
 import { defineProps, defineEmits, ref, watch, onBeforeUnmount, computed } from 'vue';
-import { GetPostsMetadata } from '../../../wailsjs/go/services/PostService';
+import { GetPostsMetadata, GetPublicPostCountByTopic } from '../../../wailsjs/go/services/PostService';
 import { GetPublicTopics } from '../../../wailsjs/go/services/TopicService';
 import { formatTime, getPostCoverImageURL } from '../../utils';
 
@@ -65,6 +65,12 @@ const sort = ref('updated');
 /** @type {import('vue').Ref<any[]>} */
 const posts = ref([]);
 
+/** @type {import('vue').Ref<number>} */
+const pageIndex = ref(1);
+   
+/** @type {import('vue').Ref<number>} */
+const maxPageIndex = ref(0);
+
 const postsList = computed(function() {
    let _list = [];
 
@@ -88,16 +94,27 @@ function topicName(id) {
 }
 
 async function fetchPostsMetadata() {
+   const limit = 8;
+
    try {
       let _posts = await GetPostsMetadata({
          private: false,
          topic: topic.value,
          sortBy: sort.value,
-         limit: 12,
-         skip: 0,
+         skip: (pageIndex.value - 1) * limit,
+         limit,
       });
 
-      if (!_posts) {
+      if (Array.isArray(_posts)) {
+         try {
+            const _postCount = await GetPublicPostCountByTopic(topic.value);
+            maxPageIndex.value = Math.ceil(_postCount / limit);
+         } catch (error) {
+            console.error(error);
+            fetchPostError.value = true;
+         }
+      } else {
+         maxPageIndex.value = 0;
          _posts = [];
       }
 
@@ -121,7 +138,12 @@ function onPostSelect($event) {
    emit('select', post);
 }
 
-watch([topic, sort], fetchPostsMetadata);
+watch([sort, pageIndex], fetchPostsMetadata);
+
+watch(topic, async function() {
+   pageIndex.value = 1;
+   await fetchPostsMetadata();
+});
 
 watch(() => props.visible, async function(newState) {
    if (!newState) {
@@ -196,7 +218,7 @@ onBeforeUnmount(function() {
             </v-row>
          </v-card-item>
 
-         <v-card-text>
+         <v-card-text v-if="postsList.length > 0">
             <v-list
                :items="postsList"
                item-title="title"
@@ -221,6 +243,16 @@ onBeforeUnmount(function() {
                </template>
             </v-list>
          </v-card-text>
+
+         <v-card-text v-else class="mx-auto pt-5">No Posts</v-card-text>
+
+         <v-card-item>
+            <v-pagination 
+               v-model="pageIndex"
+               :length="maxPageIndex" 
+               density="comfortable">
+            </v-pagination>
+         </v-card-item>
       </v-card>
     </v-dialog>
 
