@@ -16,6 +16,8 @@ export function GetPostMetadataById(arg1:string,arg2:boolean):Promise<models.Pos
 
 export function GetPostsMetadata(arg1:types.GetPostsMetadataOptions):Promise<Array<models.PostMetadataDocument>>;
 
+export function GetPublicPostCountByTopic(arg1:string):Promise<number>;
+
 export function SetPostDeleteFlag(arg1:string,arg2:boolean):Promise<void>;
 
 export function UpdatePostById(arg1:string,arg2:types.UpdatePostPayload):Promise<mongo.UpdateResult>;

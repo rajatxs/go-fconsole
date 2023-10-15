@@ -249,6 +249,20 @@ func (ps *PostService) GetPostCount(scope string, includeDeleted bool) (int64, e
 			})
 }
 
+// GetPublicPostCountByTopic returns number of public post by given topic in posts collection
+func (ps *PostService) GetPublicPostCountByTopic(topic string) (int64, error) {
+	filter := bson.D{
+		{Key: "public", Value: true},
+		{Key: "deleted", Value: false},
+	}
+
+	if topic != "all" {
+		filter = append(filter, primitive.E{Key: "topic", Value: topic})
+	}
+
+	return db.MongoDb().Collection("posts").CountDocuments(ps.Ctx, filter)
+}
+
 // CreatePost inserts new post document into posts collection
 func (ps *PostService) CreatePost(payload *types.CreatePostPayload) (*mongo.InsertOneResult, error) {
 	var (
