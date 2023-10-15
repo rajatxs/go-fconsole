@@ -247,6 +247,7 @@ export namespace types {
 	    coverImageRefName: string;
 	    coverImageRefUrl: string;
 	    authorId: string;
+	    relatedPosts: string[];
 	
 	    static createFrom(source: any = {}) {
 	        return new CreatePostPayload(source);
@@ -267,6 +268,7 @@ export namespace types {
 	        this.coverImageRefName = source["coverImageRefName"];
 	        this.coverImageRefUrl = source["coverImageRefUrl"];
 	        this.authorId = source["authorId"];
+	        this.relatedPosts = source["relatedPosts"];
 	    }
 	}
 	export class GetPostsMetadataOptions {
@@ -319,6 +321,7 @@ export namespace types {
 	    coverImagePath: string;
 	    coverImageRefName: string;
 	    coverImageRefUrl: string;
+	    relatedPosts: string[];
 	
 	    static createFrom(source: any = {}) {
 	        return new UpdatePostPayload(source);
@@ -337,6 +340,7 @@ export namespace types {
 	        this.coverImagePath = source["coverImagePath"];
 	        this.coverImageRefName = source["coverImageRefName"];
 	        this.coverImageRefUrl = source["coverImageRefUrl"];
+	        this.relatedPosts = source["relatedPosts"];
 	    }
 	}
 	export class UploadedImageFile {

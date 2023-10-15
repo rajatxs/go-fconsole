@@ -252,12 +252,18 @@ func (ps *PostService) GetPostCount(scope string, includeDeleted bool) (int64, e
 // CreatePost inserts new post document into posts collection
 func (ps *PostService) CreatePost(payload *types.CreatePostPayload) (*mongo.InsertOneResult, error) {
 	var (
-		authorId primitive.ObjectID
-		res      *mongo.InsertOneResult
-		err      error
+		authorId     primitive.ObjectID
+		res          *mongo.InsertOneResult
+		relatedPosts []primitive.ObjectID
+		err          error
 	)
 
 	if authorId, err = primitive.ObjectIDFromHex(payload.AuthorId); err != nil {
+		return nil, err
+	}
+
+	// parse related post ids
+	if relatedPosts, err = util.ParsePostIds(payload.RelatedPosts); err != nil {
 		return nil, err
 	}
 
@@ -279,7 +285,7 @@ func (ps *PostService) CreatePost(payload *types.CreatePostPayload) (*mongo.Inse
 			RefName: payload.CoverImageRefName,
 			RefUrl:  payload.CoverImageRefUrl,
 		},
-		"related":   []string{},
+		"related":   relatedPosts,
 		"createdAt": time.Now(),
 		"updatedAt": time.Now(),
 	}
@@ -302,17 +308,24 @@ func (ps *PostService) CreatePost(payload *types.CreatePostPayload) (*mongo.Inse
 // UpdatePostById updates existing post document by given rawid
 func (ps *PostService) UpdatePostById(rawid string, payload types.UpdatePostPayload) (*mongo.UpdateResult, error) {
 	var (
-		oid    primitive.ObjectID
-		filter bson.D
-		update bson.D
-		res    *mongo.UpdateResult
-		err    error
+		oid          primitive.ObjectID
+		filter       bson.D
+		update       bson.D
+		relatedPosts []primitive.ObjectID
+		res          *mongo.UpdateResult
+		err          error
 	)
 
 	if oid, err = primitive.ObjectIDFromHex(rawid); err != nil {
 		return nil, err
 	} else {
 		filter = bson.D{{Key: "_id", Value: oid}}
+
+		// parse related post ids
+		if relatedPosts, err = util.ParsePostIds(payload.RelatedPosts); err != nil {
+			return nil, err
+		}
+
 		update = bson.D{
 			{Key: "$set", Value: bson.D{
 				{Key: "title", Value: payload.Title},
@@ -328,6 +341,8 @@ func (ps *PostService) UpdatePostById(rawid string, payload types.UpdatePostPayl
 					RefName: payload.CoverImageRefName,
 					RefUrl:  payload.CoverImageRefUrl,
 				}},
+				{Key: "related", Value: relatedPosts},
+				{Key: "updatedAt", Value: time.Now()},
 			}},
 		}
 	}
@@ -362,7 +377,7 @@ func (ps *PostService) UpdatePostScope(rawid string, scope string) error {
 		return err
 	} else {
 		filter = bson.D{{Key: "_id", Value: oid}}
-		update = bson.M{"$set": bson.M{"public": public}}
+		update = bson.M{"$set": bson.M{"public": public, "updatedAt": time.Now()}}
 	}
 
 	// update scope
@@ -390,7 +405,7 @@ func (ps *PostService) SetPostDeleteFlag(rawid string, value bool) error {
 		return err
 	} else {
 		filter = bson.D{{Key: "_id", Value: oid}}
-		update = bson.M{"$set": bson.M{"deleted": value}}
+		update = bson.M{"$set": bson.M{"deleted": value, "updatedAt": time.Now()}}
 	}
 
 	// update document
