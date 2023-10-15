@@ -26,6 +26,10 @@ export function GetPostsMetadata(arg1) {
   return window['go']['services']['PostService']['GetPostsMetadata'](arg1);
 }
 
+export function GetPublicPostCountByTopic(arg1) {
+  return window['go']['services']['PostService']['GetPublicPostCountByTopic'](arg1);
+}
+
 export function SetPostDeleteFlag(arg1, arg2) {
   return window['go']['services']['PostService']['SetPostDeleteFlag'](arg1, arg2);
 }

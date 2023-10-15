@@ -18,68 +18,6 @@ export namespace models {
 	        this.refUrl = source["refUrl"];
 	    }
 	}
-	export class PostDocument {
-	    _id: number[];
-	    title: string;
-	    slug: string;
-	    desc: string;
-	    tags: string[];
-	    topic: string;
-	    body: {[key: string]: any};
-	    format: string;
-	    stars: number;
-	    public: boolean;
-	    deleted: boolean;
-	    coverImage?: PostCoverImage;
-	    authorId: number[];
-	    related: string[];
-	    // Go type: time
-	    createdAt: any;
-	    // Go type: time
-	    updatedAt: any;
-	
-	    static createFrom(source: any = {}) {
-	        return new PostDocument(source);
-	    }
-	
-	    constructor(source: any = {}) {
-	        if ('string' === typeof source) source = JSON.parse(source);
-	        this._id = source["_id"];
-	        this.title = source["title"];
-	        this.slug = source["slug"];
-	        this.desc = source["desc"];
-	        this.tags = source["tags"];
-	        this.topic = source["topic"];
-	        this.body = source["body"];
-	        this.format = source["format"];
-	        this.stars = source["stars"];
-	        this.public = source["public"];
-	        this.deleted = source["deleted"];
-	        this.coverImage = this.convertValues(source["coverImage"], PostCoverImage);
-	        this.authorId = source["authorId"];
-	        this.related = source["related"];
-	        this.createdAt = this.convertValues(source["createdAt"], null);
-	        this.updatedAt = this.convertValues(source["updatedAt"], null);
-	    }
-	
-		convertValues(a: any, classs: any, asMap: boolean = false): any {
-		    if (!a) {
-		        return a;
-		    }
-		    if (a.slice) {
-		        return (a as any[]).map(elem => this.convertValues(elem, classs));
-		    } else if ("object" === typeof a) {
-		        if (asMap) {
-		            for (const key of Object.keys(a)) {
-		                a[key] = new classs(a[key]);
-		            }
-		            return a;
-		        }
-		        return new classs(a);
-		    }
-		    return a;
-		}
-	}
 	export class PostMetadataDocument {
 	    _id: number[];
 	    title: string;
@@ -114,6 +52,118 @@ export namespace models {
 	        this.createdAt = this.convertValues(source["createdAt"], null);
 	        this.updatedAt = this.convertValues(source["updatedAt"], null);
 	        this.coverImage = this.convertValues(source["coverImage"], PostCoverImage);
+	    }
+	
+		convertValues(a: any, classs: any, asMap: boolean = false): any {
+		    if (!a) {
+		        return a;
+		    }
+		    if (a.slice) {
+		        return (a as any[]).map(elem => this.convertValues(elem, classs));
+		    } else if ("object" === typeof a) {
+		        if (asMap) {
+		            for (const key of Object.keys(a)) {
+		                a[key] = new classs(a[key]);
+		            }
+		            return a;
+		        }
+		        return new classs(a);
+		    }
+		    return a;
+		}
+	}
+	export class PostRelatedView {
+	    _id: number[];
+	    title: string;
+	    slug: string;
+	    desc: string;
+	    format: string;
+	    stars: number;
+	    public: boolean;
+	    coverImage?: PostCoverImage;
+	    authorId: number[];
+	    // Go type: time
+	    createdAt: any;
+	    // Go type: time
+	    updatedAt: any;
+	
+	    static createFrom(source: any = {}) {
+	        return new PostRelatedView(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this._id = source["_id"];
+	        this.title = source["title"];
+	        this.slug = source["slug"];
+	        this.desc = source["desc"];
+	        this.format = source["format"];
+	        this.stars = source["stars"];
+	        this.public = source["public"];
+	        this.coverImage = this.convertValues(source["coverImage"], PostCoverImage);
+	        this.authorId = source["authorId"];
+	        this.createdAt = this.convertValues(source["createdAt"], null);
+	        this.updatedAt = this.convertValues(source["updatedAt"], null);
+	    }
+	
+		convertValues(a: any, classs: any, asMap: boolean = false): any {
+		    if (!a) {
+		        return a;
+		    }
+		    if (a.slice) {
+		        return (a as any[]).map(elem => this.convertValues(elem, classs));
+		    } else if ("object" === typeof a) {
+		        if (asMap) {
+		            for (const key of Object.keys(a)) {
+		                a[key] = new classs(a[key]);
+		            }
+		            return a;
+		        }
+		        return new classs(a);
+		    }
+		    return a;
+		}
+	}
+	export class PostObjectView {
+	    _id: number[];
+	    title: string;
+	    slug: string;
+	    desc: string;
+	    tags: string[];
+	    topic: string;
+	    body: {[key: string]: any};
+	    format: string;
+	    stars: number;
+	    public: boolean;
+	    coverImage?: PostCoverImage;
+	    authorId: number[];
+	    relatedPosts: PostRelatedView[];
+	    // Go type: time
+	    createdAt: any;
+	    // Go type: time
+	    updatedAt: any;
+	
+	    static createFrom(source: any = {}) {
+	        return new PostObjectView(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this._id = source["_id"];
+	        this.title = source["title"];
+	        this.slug = source["slug"];
+	        this.desc = source["desc"];
+	        this.tags = source["tags"];
+	        this.topic = source["topic"];
+	        this.body = source["body"];
+	        this.format = source["format"];
+	        this.stars = source["stars"];
+	        this.public = source["public"];
+	        this.coverImage = this.convertValues(source["coverImage"], PostCoverImage);
+	        this.authorId = source["authorId"];
+	        this.relatedPosts = this.convertValues(source["relatedPosts"], PostRelatedView);
+	        this.createdAt = this.convertValues(source["createdAt"], null);
+	        this.updatedAt = this.convertValues(source["updatedAt"], null);
 	    }
 	
 		convertValues(a: any, classs: any, asMap: boolean = false): any {
@@ -197,6 +247,7 @@ export namespace types {
 	    coverImageRefName: string;
 	    coverImageRefUrl: string;
 	    authorId: string;
+	    relatedPosts: string[];
 	
 	    static createFrom(source: any = {}) {
 	        return new CreatePostPayload(source);
@@ -217,6 +268,7 @@ export namespace types {
 	        this.coverImageRefName = source["coverImageRefName"];
 	        this.coverImageRefUrl = source["coverImageRefUrl"];
 	        this.authorId = source["authorId"];
+	        this.relatedPosts = source["relatedPosts"];
 	    }
 	}
 	export class GetPostsMetadataOptions {
@@ -269,6 +321,7 @@ export namespace types {
 	    coverImagePath: string;
 	    coverImageRefName: string;
 	    coverImageRefUrl: string;
+	    relatedPosts: string[];
 	
 	    static createFrom(source: any = {}) {
 	        return new UpdatePostPayload(source);
@@ -287,6 +340,7 @@ export namespace types {
 	        this.coverImagePath = source["coverImagePath"];
 	        this.coverImageRefName = source["coverImageRefName"];
 	        this.coverImageRefUrl = source["coverImageRefUrl"];
+	        this.relatedPosts = source["relatedPosts"];
 	    }
 	}
 	export class UploadedImageFile {

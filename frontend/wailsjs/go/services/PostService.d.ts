@@ -8,13 +8,15 @@ export function CreatePost(arg1:types.CreatePostPayload):Promise<mongo.InsertOne
 
 export function DeletePostImage(arg1:string):Promise<void>;
 
-export function GetPostById(arg1:string):Promise<models.PostDocument>;
+export function GetPostById(arg1:string):Promise<models.PostObjectView>;
 
 export function GetPostCount(arg1:string,arg2:boolean):Promise<number>;
 
 export function GetPostMetadataById(arg1:string,arg2:boolean):Promise<models.PostMetadataDocument>;
 
 export function GetPostsMetadata(arg1:types.GetPostsMetadataOptions):Promise<Array<models.PostMetadataDocument>>;
+
+export function GetPublicPostCountByTopic(arg1:string):Promise<number>;
 
 export function SetPostDeleteFlag(arg1:string,arg2:boolean):Promise<void>;
 

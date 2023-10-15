@@ -33,11 +33,14 @@ export const state = reactive({
 
    /** @type {string} */
    coverImageAssetId: '',
+
+   /** @type {Array<{title: string, value: string}>} */
+   relatedPosts: [],
 });
 
 /**
  * Sets state properties from given `data` payload
- * @param {import('../../../wailsjs/go/models').models.PostDocument} data 
+ * @param {import('../../../wailsjs/go/models').models.PostObjectView} data 
  */
 export function setMetadata(data) {
    state.title = data.title;
@@ -47,6 +50,15 @@ export function setMetadata(data) {
    state.tags = data.tags;
    state.publicScope = data.public;
    state.body = data.body;
+
+   if (Array.isArray(data.relatedPosts)) {
+      state.relatedPosts = data.relatedPosts.map(p => {
+         return {
+            title: p.title,
+            value: p._id.toString(),
+         };
+      });
+   }
 
    if (data.coverImage) {
       state.coverImageRefName = data.coverImage.refName;
@@ -69,4 +81,5 @@ export function clearMetadata() {
    state.coverImageRefUrl = '';
    state.coverImagePublicId = '';
    state.coverImageAssetId = '';
+   state.relatedPosts = [];
 }

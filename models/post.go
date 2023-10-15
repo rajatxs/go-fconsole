@@ -48,6 +48,38 @@ type PostDocument struct {
 	UpdatedAt  time.Time          `bson:"updatedAt" json:"updatedAt"`
 }
 
+type PostObjectView struct {
+	Id           primitive.ObjectID `bson:"_id" json:"_id"`
+	Title        string             `bson:"title" json:"title"`
+	Slug         string             `bson:"slug" json:"slug"`
+	Desc         string             `bson:"desc" json:"desc"`
+	Tags         []string           `bson:"tags" json:"tags"`
+	Topic        string             `bson:"topic" json:"topic"`
+	Body         bson.M             `bson:"body" json:"body"`
+	Format       string             `bson:"format" json:"format"`
+	Stars        int64              `bson:"stars" json:"stars"`
+	Public       bool               `bson:"public" json:"public"`
+	CoverImage   *PostCoverImage    `bson:"coverImage" json:"coverImage"`
+	AuthorId     primitive.ObjectID `bson:"authorId" json:"authorId"`
+	RelatedPosts []PostRelatedView  `bson:"relatedPosts" json:"relatedPosts"`
+	CreatedAt    time.Time          `bson:"createdAt" json:"createdAt"`
+	UpdatedAt    time.Time          `bson:"updatedAt" json:"updatedAt"`
+}
+
+type PostRelatedView struct {
+	Id         primitive.ObjectID `bson:"_id" json:"_id"`
+	Title      string             `bson:"title" json:"title"`
+	Slug       string             `bson:"slug" json:"slug"`
+	Desc       string             `bson:"desc" json:"desc"`
+	Format     string             `bson:"format" json:"format"`
+	Stars      int64              `bson:"stars" json:"stars"`
+	Public     bool               `bson:"public" json:"public"`
+	CoverImage *PostCoverImage    `bson:"coverImage" json:"coverImage"`
+	AuthorId   primitive.ObjectID `bson:"authorId" json:"authorId"`
+	CreatedAt  time.Time          `bson:"createdAt" json:"createdAt"`
+	UpdatedAt  time.Time          `bson:"updatedAt" json:"updatedAt"`
+}
+
 type PostIndex struct {
 	ObjectId  string    `json:"objectID"`
 	Name      string    `json:"name"`
