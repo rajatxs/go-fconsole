@@ -159,6 +159,8 @@ function initEditor() {
 
 /** @param {import('@editorjs/editorjs').OutputData} body  */
 async function createPost(body) {
+   const relatedPosts = state.relatedPosts.map(p => p.value);
+
    try {
       await CreatePost({
          title: state.title,
@@ -174,6 +176,7 @@ async function createPost(body) {
          coverImageRefName: state.coverImageRefName,
          coverImageRefUrl: state.coverImageRefUrl,
          authorId: getAdminId(),
+         relatedPosts,
       });
    } catch (error) {
       console.error(error);
@@ -183,6 +186,8 @@ async function createPost(body) {
 
 /** @param {import('@editorjs/editorjs').OutputData} body  */
 async function updatePost(body) {
+   const relatedPosts = state.relatedPosts.map(p => p.value);
+
    try {
       await UpdatePostById(props.id, {
          title: state.title,
@@ -196,6 +201,7 @@ async function updatePost(body) {
          coverImagePath: state.coverImagePublicId,
          coverImageRefName: state.coverImageRefName,
          coverImageRefUrl: state.coverImageRefUrl,
+         relatedPosts,
       });
    } catch (error) {
       console.error(error);
@@ -204,7 +210,7 @@ async function updatePost(body) {
 }
 
 async function savePost() {
-   /** @type{import('@editorjs/editorjs').OutputData} */
+   /** @type {import('@editorjs/editorjs').OutputData} */
    let body;
 
    loadingSavePost.value = true;
@@ -243,6 +249,7 @@ watch(
       if (action.value === 'update') {
          try {
             const post = await GetPostById(props.id);
+            console.log("post::", post);
             setMetadata(post);
          } catch (error) {
             console.error(error);
