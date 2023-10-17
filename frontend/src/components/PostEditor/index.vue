@@ -7,6 +7,7 @@ import List from '@editorjs/list';
 import Table from '@editorjs/table';
 import CodeTool from '@editorjs/code';
 import WarningTool from '@editorjs/warning';
+import InlineCodeTool from '@editorjs/inline-code';
 import {
    CreatePost,
    UpdatePostById,
@@ -128,6 +129,7 @@ function initEditor() {
          },
          list: {
             class: List,
+            inlineToolbar: true,
          },
          paragraph: {
             class: Paragraph,
@@ -153,6 +155,9 @@ function initEditor() {
          warning: {
             class: WarningTool,
          },
+         inlineCode: {
+            class: InlineCodeTool,
+         }
       },
    });
 }
