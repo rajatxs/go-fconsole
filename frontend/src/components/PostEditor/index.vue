@@ -181,6 +181,7 @@ async function createPost(body) {
          coverImageRefName: state.coverImageRefName,
          coverImageRefUrl: state.coverImageRefUrl,
          authorId: getAdminId(),
+         license: state.license,
          relatedPosts,
       });
    } catch (error) {
@@ -206,6 +207,7 @@ async function updatePost(body) {
          coverImagePath: state.coverImagePublicId,
          coverImageRefName: state.coverImageRefName,
          coverImageRefUrl: state.coverImageRefUrl,
+         license: state.license,
          relatedPosts,
       });
    } catch (error) {
@@ -254,7 +256,6 @@ watch(
       if (action.value === 'update') {
          try {
             const post = await GetPostById(props.id);
-            console.log("post::", post);
             setMetadata(post);
          } catch (error) {
             console.error(error);
