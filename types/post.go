@@ -24,6 +24,7 @@ type CreatePostPayload struct {
 	CoverImageRefName string   `json:"coverImageRefName"`
 	CoverImageRefUrl  string   `json:"coverImageRefUrl"`
 	AuthorId          string   `json:"authorId"`
+	License           string   `json:"license"`
 	RelatedPosts      []string `json:"relatedPosts"`
 }
 
@@ -39,5 +40,6 @@ type UpdatePostPayload struct {
 	CoverImagePath    string   `json:"coverImagePath"`
 	CoverImageRefName string   `json:"coverImageRefName"`
 	CoverImageRefUrl  string   `json:"coverImageRefUrl"`
+	License           string   `json:"license"`
 	RelatedPosts      []string `json:"relatedPosts"`
 }
