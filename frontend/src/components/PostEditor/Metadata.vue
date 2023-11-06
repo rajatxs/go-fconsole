@@ -24,6 +24,14 @@ const coverImageUploadErrorSnackbar = ref(false);
 /** @type {import('vue').Ref<{title: string, value: string}[]>} */
 const topics = ref([]);
 
+/** @type {import('vue').Ref<{title: string, value: string}[]>} */
+const licenses = ref([
+   { title: "Creative Commons Attribution (CC BY) 4.0", value: "CC-BY-4.0" },
+   { title: "Creative Commons Attribution-NonCommercial (CC BY-NC) 4.0", value: "CC-BY-NC-4.0" },
+   { title: "Creative Commons Attribution-ShareAlike (CC BY-SA) 4.0", value: "CC-BY-SA-4.0" },
+   { title: "Creative Commons Attribution-NoDerivs (CC BY-ND) 4.0", value: "CC-BY-ND-4.0" },
+]);
+
 const coverImageUploaded = computed(function () {
    return state.coverImagePublicId.length > 0 && state.coverImageAssetId.length > 0;
 });
@@ -150,8 +158,16 @@ function addRelatedPost(post) {
       <!-- Description multiline text field -->
       <v-textarea v-model="state.desc" label="Description"></v-textarea>
 
-      <!-- Tags input field -->
-      <v-combobox v-model="state.tags" label="Tags" multiple chips></v-combobox>
+      <v-row>
+         <v-col cols="12" sm="6">
+            <!-- Tags input field -->
+            <v-combobox v-model="state.tags" label="Tags" multiple chips></v-combobox>
+         </v-col>
+         <v-col cols="12" sm="6">
+            <!-- License selection dropdown -->
+            <v-select v-model="state.license" label="License" :items="licenses"></v-select>
+         </v-col>
+      </v-row>
 
       <!-- Related post input field -->
       <v-row>

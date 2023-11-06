@@ -24,6 +24,7 @@ type PostMetadataDocument struct {
 	Stars      int64              `bson:"stars" json:"stars"`
 	Format     string             `bson:"format" json:"format"`
 	AuthorId   primitive.ObjectID `bson:"authorId" json:"authorId"`
+	License    string             `bson:"license" json:"license"`
 	CreatedAt  time.Time          `bson:"createdAt" json:"createdAt"`
 	UpdatedAt  time.Time          `bson:"updatedAt" json:"updatedAt"`
 	CoverImage *PostCoverImage    `bson:"coverImage" json:"coverImage"`
@@ -43,6 +44,7 @@ type PostDocument struct {
 	Deleted    bool               `bson:"deleted" json:"deleted"`
 	CoverImage *PostCoverImage    `bson:"coverImage" json:"coverImage"`
 	AuthorId   primitive.ObjectID `bson:"authorId" json:"authorId"`
+	License    string             `bson:"license" json:"license"`
 	Related    []string           `bson:"related" json:"related"`
 	CreatedAt  time.Time          `bson:"createdAt" json:"createdAt"`
 	UpdatedAt  time.Time          `bson:"updatedAt" json:"updatedAt"`
@@ -61,6 +63,7 @@ type PostObjectView struct {
 	Public       bool               `bson:"public" json:"public"`
 	CoverImage   *PostCoverImage    `bson:"coverImage" json:"coverImage"`
 	AuthorId     primitive.ObjectID `bson:"authorId" json:"authorId"`
+	License      string             `bson:"license" json:"license"`
 	RelatedPosts []PostRelatedView  `bson:"relatedPosts" json:"relatedPosts"`
 	CreatedAt    time.Time          `bson:"createdAt" json:"createdAt"`
 	UpdatedAt    time.Time          `bson:"updatedAt" json:"updatedAt"`
@@ -76,6 +79,7 @@ type PostRelatedView struct {
 	Public     bool               `bson:"public" json:"public"`
 	CoverImage *PostCoverImage    `bson:"coverImage" json:"coverImage"`
 	AuthorId   primitive.ObjectID `bson:"authorId" json:"authorId"`
+	License    string             `bson:"license" json:"license"`
 	CreatedAt  time.Time          `bson:"createdAt" json:"createdAt"`
 	UpdatedAt  time.Time          `bson:"updatedAt" json:"updatedAt"`
 }

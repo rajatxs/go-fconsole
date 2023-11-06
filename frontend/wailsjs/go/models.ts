@@ -28,6 +28,7 @@ export namespace models {
 	    stars: number;
 	    format: string;
 	    authorId: number[];
+	    license: string;
 	    // Go type: time
 	    createdAt: any;
 	    // Go type: time
@@ -49,6 +50,7 @@ export namespace models {
 	        this.stars = source["stars"];
 	        this.format = source["format"];
 	        this.authorId = source["authorId"];
+	        this.license = source["license"];
 	        this.createdAt = this.convertValues(source["createdAt"], null);
 	        this.updatedAt = this.convertValues(source["updatedAt"], null);
 	        this.coverImage = this.convertValues(source["coverImage"], PostCoverImage);
@@ -82,6 +84,7 @@ export namespace models {
 	    public: boolean;
 	    coverImage?: PostCoverImage;
 	    authorId: number[];
+	    license: string;
 	    // Go type: time
 	    createdAt: any;
 	    // Go type: time
@@ -102,6 +105,7 @@ export namespace models {
 	        this.public = source["public"];
 	        this.coverImage = this.convertValues(source["coverImage"], PostCoverImage);
 	        this.authorId = source["authorId"];
+	        this.license = source["license"];
 	        this.createdAt = this.convertValues(source["createdAt"], null);
 	        this.updatedAt = this.convertValues(source["updatedAt"], null);
 	    }
@@ -137,6 +141,7 @@ export namespace models {
 	    public: boolean;
 	    coverImage?: PostCoverImage;
 	    authorId: number[];
+	    license: string;
 	    relatedPosts: PostRelatedView[];
 	    // Go type: time
 	    createdAt: any;
@@ -161,6 +166,7 @@ export namespace models {
 	        this.public = source["public"];
 	        this.coverImage = this.convertValues(source["coverImage"], PostCoverImage);
 	        this.authorId = source["authorId"];
+	        this.license = source["license"];
 	        this.relatedPosts = this.convertValues(source["relatedPosts"], PostRelatedView);
 	        this.createdAt = this.convertValues(source["createdAt"], null);
 	        this.updatedAt = this.convertValues(source["updatedAt"], null);
@@ -247,6 +253,7 @@ export namespace types {
 	    coverImageRefName: string;
 	    coverImageRefUrl: string;
 	    authorId: string;
+	    license: string;
 	    relatedPosts: string[];
 	
 	    static createFrom(source: any = {}) {
@@ -268,6 +275,7 @@ export namespace types {
 	        this.coverImageRefName = source["coverImageRefName"];
 	        this.coverImageRefUrl = source["coverImageRefUrl"];
 	        this.authorId = source["authorId"];
+	        this.license = source["license"];
 	        this.relatedPosts = source["relatedPosts"];
 	    }
 	}
@@ -321,6 +329,7 @@ export namespace types {
 	    coverImagePath: string;
 	    coverImageRefName: string;
 	    coverImageRefUrl: string;
+	    license: string;
 	    relatedPosts: string[];
 	
 	    static createFrom(source: any = {}) {
@@ -340,6 +349,7 @@ export namespace types {
 	        this.coverImagePath = source["coverImagePath"];
 	        this.coverImageRefName = source["coverImageRefName"];
 	        this.coverImageRefUrl = source["coverImageRefUrl"];
+	        this.license = source["license"];
 	        this.relatedPosts = source["relatedPosts"];
 	    }
 	}

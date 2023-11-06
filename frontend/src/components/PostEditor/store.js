@@ -33,6 +33,9 @@ export const state = reactive({
 
    /** @type {string} */
    coverImageAssetId: '',
+   
+   /** @type {string} */
+   license: 'CC-BY-4.0',
 
    /** @type {Array<{title: string, value: string}>} */
    relatedPosts: [],
@@ -50,6 +53,7 @@ export function setMetadata(data) {
    state.tags = data.tags;
    state.publicScope = data.public;
    state.body = data.body;
+   state.license = data.license;
 
    if (Array.isArray(data.relatedPosts)) {
       state.relatedPosts = data.relatedPosts.map(p => {
@@ -81,5 +85,6 @@ export function clearMetadata() {
    state.coverImageRefUrl = '';
    state.coverImagePublicId = '';
    state.coverImageAssetId = '';
+   state.license = 'CC-BY-4.0';
    state.relatedPosts = [];
 }
