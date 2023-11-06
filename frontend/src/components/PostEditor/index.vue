@@ -243,6 +243,8 @@ async function savePost() {
 
    loadingSavePost.value = false;
    clearMetadata();
+   // @ts-ignore
+   editor = null;
    emit('saved');
 }
 
